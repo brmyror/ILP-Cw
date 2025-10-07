@@ -1,27 +1,19 @@
 package uk.ac.ed.acp.cw2.controller;
 
-import io.swagger.v3.core.util.Json;
-import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ed.acp.cw2.data.Distance;
+import uk.ac.ed.acp.cw2.data.LngLatPairRequest;
 import uk.ac.ed.acp.cw2.data.Position;
-import uk.ac.ed.acp.cw2.data.RuntimeEnvironment;
 
 import java.net.URL;
-import java.time.Instant;
 import java.util.Map;
 
-/**
- * Controller class that handles various HTTP endpoints for the application.
- * Provides functionality for serving the index page, retrieving a static UUID,
- * and managing key-value pairs through POST requests.
- */
+
 @RestController()
 @RequestMapping("/api/v1")
 public class ServiceController {
@@ -55,46 +47,40 @@ public class ServiceController {
      * Endpoint to calculate the Euclidean distance between two geographical positions.
      * Expects a JSON payload with two positions, each containing latitude and longitude.
      *
-     * @param positions A map containing two Position objects with keys "position1" and "position2".
-     * @return The Euclidean distance between the two positions, or a 400 Bad Request status if the input is invalid.
+     * @param req A LngLatPairRequest object containing two Position objects.
+     * @return The Euclidean distance as a Double, or a 400 Bad Request status if the input is invalid.
      */
 
     @PostMapping("/distanceTo")
-    public ResponseEntity<Double> distanceTo(@RequestBody Map<String, Position> positions) {
+    public Double distanceTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
-            Position p1 = positions.get("position1");
-            Position p2 = positions.get("position2");
-            if (p1 == null || p2 == null) {
-                logger.error("bad request");
-                return ResponseEntity.status(400).build();
+            if (req == null || req.getPosition1() == null || req.getPosition2() == null) {
+                response.setStatus(400);
+                logger.error("Invalid parameters passed in");
+                return null;
             }
-            double distance = Distance.calculateEuclideanDistance(p1, p2);
-            return ResponseEntity.ok(distance);
+            double distance = Distance.calculateEuclideanDistance(req.getPosition1(), req.getPosition2());
+            ResponseEntity.ok(distance);
+            return distance;
         } catch (Exception e) {
+            response.setStatus(400);
             logger.error("bad request", e);
-            return ResponseEntity.status(400).build();
+            return null;
         }
     }
 
     /**
-     * Endpoint to determine if two geographical positions are within a proximity.
-     * Expects a JSON payload with two positions, each containing latitude and longitude.
-     * The threshold for being "within a proximity" is defined as a Euclidean distance of less than 0.00015.
+     * Endpoint to determine if two geographical positions are "close" to each other.
+     * Uses the distanceTo method to calculate the distance and checks if it is below a certain threshold.
      *
-     * @param positions A map containing two Position objects with keys "position1" and "position2".
-     * @return A boolean indicating if the two positions are close, or a 400 Bad Request status if the input is invalid.
+     * @param req A LngLatPairRequest object containing two Position objects.
+     * @return A Boolean indicating if the positions are close, or a 400 Bad Request status if the input is invalid.
      */
 
     @PostMapping("/isCloseTo")
-    public ResponseEntity<Boolean> isCloseTo(@RequestBody Map<String, Position> positions) {
+    public ResponseEntity<Boolean> isCloseTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
-            Position p1 = positions.get("position1");
-            Position p2 = positions.get("position2");
-            if (p1 == null || p2 == null) {
-                logger.error("bad request");
-                return ResponseEntity.status(400).build();
-            }
-            double distance = Distance.calculateEuclideanDistance(p1, p2);
+            double distance = distanceTo(req, response);
             return ResponseEntity.ok(distance < 0.00015);
         } catch (Exception e) {
             logger.error("bad request", e);
