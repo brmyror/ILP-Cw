@@ -4,14 +4,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uk.ac.ed.acp.cw2.data.Distance;
-import uk.ac.ed.acp.cw2.data.LngLatPairRequest;
-import uk.ac.ed.acp.cw2.data.Position;
+import uk.ac.ed.acp.cw2.data.*;
 
 import java.net.URL;
-import java.util.Map;
 
 
 @RestController()
@@ -46,7 +42,16 @@ public class ServiceController {
     /**
      * Endpoint to calculate the Euclidean distance between two geographical positions.
      * Expects a JSON payload with two positions, each containing latitude and longitude.
-     *
+     *{
+     *      *   "position1": {
+     *      *     "lng": -3.192473,
+     *      *     "lat": 55.946233
+     *      *   },
+     *      *   "position2": {
+     *      *     "lng": -3.192473,
+     *      *     "lat": 55.946300
+     *      *   }
+     *      * }
      * @param req A LngLatPairRequest object containing two Position objects.
      * @return The Euclidean distance as a Double, or a 400 Bad Request status if the input is invalid.
      */
@@ -54,17 +59,22 @@ public class ServiceController {
     @PostMapping("/distanceTo")
     public Double distanceTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
+            // Validate input
             if (req == null || req.getPosition1() == null || req.getPosition2() == null) {
-                response.setStatus(400);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 logger.error("Invalid parameters passed in");
                 return null;
             }
+
+            // Calculate and return Euclidean distance
             double distance = Distance.calculateEuclideanDistance(req.getPosition1(), req.getPosition2());
-            ResponseEntity.ok(distance);
+            response.setStatus(HttpServletResponse.SC_OK);
             return distance;
+
+            // Catch any exceptions and return a 400 Bad Request status
         } catch (Exception e) {
-            response.setStatus(400);
-            logger.error("bad request", e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Exception caught", e);
             return null;
         }
     }
@@ -72,19 +82,55 @@ public class ServiceController {
     /**
      * Endpoint to determine if two geographical positions are "close" to each other.
      * Uses the distanceTo method to calculate the distance and checks if it is below a certain threshold.
-     *
+     * Accepts JSON like:
+     * {
+     *   "position1": {
+     *     "lng": -3.192473,
+     *     "lat": 55.946233
+     *   },
+     *   "position2": {
+     *     "lng": -3.192473,
+     *     "lat": 55.946300
+     *   }
+     * }
      * @param req A LngLatPairRequest object containing two Position objects.
      * @return A Boolean indicating if the positions are close, or a 400 Bad Request status if the input is invalid.
      */
 
     @PostMapping("/isCloseTo")
-    public ResponseEntity<Boolean> isCloseTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
+    public Boolean isCloseTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
-            double distance = distanceTo(req, response);
-            return ResponseEntity.ok(distance < 0.00015);
+            // Use the distanceTo method to get the distance between the two positions and
+            // check if its < 0.00015
+            Boolean isClose = distanceTo(req, response) < 0.00015;
+            response.setStatus(HttpServletResponse.SC_OK);
+            return isClose;
+
+            // Catch any exceptions and return a 400 Bad Request status
         } catch (Exception e) {
-            logger.error("bad request", e);
-            return ResponseEntity.status(400).build();
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Exception caught", e);
+            return null;
+        }
+    }
+
+    @PostMapping("nextPosition")
+    public Position nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
+        try {
+            // Validate input
+            if (req == null || req.getStart() == null || req.getAngle() == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                logger.error("Invalid parameters passed in");
+                return null;
+            }
+
+            return null; // TODO implement this method
+
+            // Catch any exceptions and return a 400 Bad Request status
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Exception caught", e);
+            return null;
         }
     }
 }
