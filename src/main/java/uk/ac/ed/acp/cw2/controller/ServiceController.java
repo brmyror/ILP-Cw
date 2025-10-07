@@ -53,15 +53,17 @@ public class ServiceController {
      *      *   }
      *      * }
      * @param req A LngLatPairRequest object containing two Position objects.
+     * @param response HttpServletResponse to set the status code.
      * @return The Euclidean distance as a Double, or a 400 Bad Request status if the input is invalid.
      */
 
     @PostMapping("/distanceTo")
     public Double distanceTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
+
+            Boolean errorHandler = LngLatPairRequest.errorHandler(req);
             // Validate input
-            if (req == null || req.getPosition1() == null || req.getPosition2() == null) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            if (errorHandler) {
                 logger.error("Invalid parameters passed in");
                 return null;
             }
@@ -94,6 +96,7 @@ public class ServiceController {
      *   }
      * }
      * @param req A LngLatPairRequest object containing two Position objects.
+     * @param response HttpServletResponse to set the status code.
      * @return A Boolean indicating if the positions are close, or a 400 Bad Request status if the input is invalid.
      */
 
@@ -114,19 +117,57 @@ public class ServiceController {
         }
     }
 
+    /**
+     * Endpoint to calculate the next geographical position given a starting position and an angle.
+     * The angle must be one of the 16 cardinal points (0, 22.5, 45, ..., 360 degrees).
+     * The movement distance is fixed at 0.00015 degrees.
+     * Accepts JSON like:
+     * {
+     *   "start": {
+     *     "lng": -3.192473,
+     *     "lat": 55.946233
+     *   },
+     *   "angle": 90
+     * }
+     * @param req A NextPositionRequest object containing a starting Position and an angle in degrees.
+     * @param response HttpServletResponse to set the status code.
+     * @return A Position object representing the new position, or a 400 Bad Request status if the input is invalid.
+     */
     @PostMapping("nextPosition")
     public Position nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
         try {
-            // Validate input
-            if (req == null || req.getStart() == null || req.getAngle() == null) {
+            Boolean errorHandler = NextPositionRequest.errorHandler(req);
+            // Validate input, reject if: start, angle, lng, lat is NaN or out of bounds, or lng > 0 or lat < 0
+            if (errorHandler) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 logger.error("Invalid parameters passed in");
                 return null;
             }
 
-            return null; // TODO implement this method
+            // Check that given angle is one of 16 cardinal points
+            double degrees = req.getAngle();
+            Angle angle = Angle.fromDegrees(degrees);
+            if (angle == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                logger.error("Invalid angle passed in");
+                return null;
+            }
 
-            // Catch any exceptions and return a 400 Bad Request status
+            final double MOVE_DISTANCE = 0.00015;
+
+            // Calculate the change in latitude and longitude based on the angle
+            double changeInLng = MOVE_DISTANCE * Math.cos(degrees);
+            double changeInLat = MOVE_DISTANCE * Math.sin(degrees);
+
+            Position start = req.getStart();
+            Position next = new Position();
+
+            next.setLng(start.getLng() + changeInLng);
+            next.setLat(start.getLat() + changeInLat);
+            response.setStatus(HttpServletResponse.SC_OK);
+            return next;
+
+            // Catch any other exceptions and return a 400 Bad Request status
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logger.error("Exception caught", e);

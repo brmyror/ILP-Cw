@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class Position {
     @JsonProperty("lng")
-    private double lng;
+    private Double lng;
 
     @JsonProperty("lat")
-    private double lat;
+    private Double lat;
     }
 
