@@ -64,7 +64,7 @@ public class ServiceController {
             Boolean errorHandler = LngLatPairRequest.errorHandler(req);
             // Validate input
             if (errorHandler) {
-                logger.error("Invalid parameters passed in");
+                logger.error("Invalid position parameters passed in");
                 return null;
             }
 
