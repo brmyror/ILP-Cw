@@ -19,8 +19,8 @@ public class NextPositionRequest {
             return true;
         }
 
-        // Check angle is null
-        else if (req.getAngle() == null) {
+        // Check if angle or start has an error
+        else if (Angle.errorHandler(req.getAngle())) {
             return true;
         } else return Position.errorHandler(req.getStart());
     }

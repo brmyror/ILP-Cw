@@ -29,9 +29,9 @@ public class ServiceController {
     }
 
     /**
-     * Endpoint to retrieve a static UUID.
+     * Endpoint to retrieve a static UID.
      *
-     * @return A hardcoded UUID string.
+     * @return A hardcoded UID string.
      */
 
     @GetMapping("/uid")
@@ -61,9 +61,9 @@ public class ServiceController {
     public Double distanceTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
 
-            Boolean errorHandler = LngLatPairRequest.errorHandler(req);
-            // Validate input
-            if (errorHandler) {
+            Boolean errorHandlerDistanceTo = LngLatPairRequest.errorHandler(req);
+            // Validate input and reject if: req, pos1, pos2, lng, lat is NaN or out of bounds
+            if (errorHandlerDistanceTo) {
                 logger.error("Invalid position parameters passed in");
                 return null;
             }
@@ -133,12 +133,12 @@ public class ServiceController {
      * @param response HttpServletResponse to set the status code.
      * @return A Position object representing the new position, or a 400 Bad Request status if the input is invalid.
      */
-    @PostMapping("nextPosition")
+    @PostMapping("/nextPosition")
     public Position nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
         try {
-            Boolean errorHandler = NextPositionRequest.errorHandler(req);
-            // Validate input, reject if: start, angle, lng, lat is NaN or out of bounds, or lng > 0 or lat < 0
-            if (errorHandler) {
+            Boolean errorHandlerNextPosition = NextPositionRequest.errorHandler(req);
+            // Validate input, reject if: start, angle, lng, lat is NaN or out of bounds
+            if (errorHandlerNextPosition) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 logger.error("Invalid parameters passed in");
                 return null;
@@ -147,7 +147,7 @@ public class ServiceController {
             // Check that given angle is one of 16 cardinal points
             double degrees = req.getAngle();
             Boolean errorHandlerAngle = Angle.errorHandler(degrees);
-            if (errorHandlerAngle == null) {
+            if (errorHandlerAngle) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 logger.error("Invalid angle passed in");
                 return null;
@@ -162,6 +162,7 @@ public class ServiceController {
             Position start = req.getStart();
             Position next = new Position();
 
+            // Calculate the new position
             next.setLng(start.getLng() + changeInLng);
             next.setLat(start.getLat() + changeInLat);
             response.setStatus(HttpServletResponse.SC_OK);
