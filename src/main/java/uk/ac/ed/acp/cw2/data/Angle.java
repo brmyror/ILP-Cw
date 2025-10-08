@@ -1,15 +1,11 @@
 package uk.ac.ed.acp.cw2.data;
 
 /**
- * Enum representing compass angles in 22.5-degree increments.
- * Is entirely unneeded but makes the code more readable and will possibly be used in CW2, and have ended up
- * using it for handling proper angles in the NextPosition endpoint.
+ * Utility class for handling angle-related error handling.
  */
-public enum Angle {
-    NORTH, NORTH_NORTH_EAST, NORTH_EAST, EAST_NORTH_EAST, EAST, EAST_SOUTH_EAST, SOUTH_EAST, SOUTH_SOUTH_EAST,
-    SOUTH, SOUTH_SOUTH_WEST, SOUTH_WEST, WEST_SOUTH_WEST, WEST, WEST_NORTH_WEST, NORTH_WEST, NORTH_NORTH_WEST;
+public class Angle {
 
-    public static Angle fromDegrees(Double degrees) {
+    public static Boolean errorHandler(Double degrees) {
         if (degrees < 0 || degrees > 360) return null;
 
         // handles the index overflow edge case
@@ -19,7 +15,6 @@ public enum Angle {
         double sector = 22.5;
         if (degrees % sector != 0) return null;
 
-        int index = (int) (degrees / sector);
-        return Angle.values()[index];
+        return true;
     }
 }

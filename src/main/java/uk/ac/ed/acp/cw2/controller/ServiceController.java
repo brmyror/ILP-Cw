@@ -146,8 +146,8 @@ public class ServiceController {
 
             // Check that given angle is one of 16 cardinal points
             double degrees = req.getAngle();
-            Angle angle = Angle.fromDegrees(degrees);
-            if (angle == null) {
+            Boolean errorHandlerAngle = Angle.errorHandler(degrees);
+            if (errorHandlerAngle == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 logger.error("Invalid angle passed in");
                 return null;
