@@ -10,7 +10,7 @@ public class Angle {
         if (degrees == null) return true;
         else if (degrees < 0 || degrees > 360) return true;
 
-        // handles the index overflow edge case
+        // handles the overflow edge case
         else if (degrees == 360) degrees = (double) 0;
 
         // Check if degrees is a multiple of 22.5, and therefore one of the 16 cardinal directions

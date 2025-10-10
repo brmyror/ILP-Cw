@@ -43,15 +43,15 @@ public class ServiceController {
      * Endpoint to calculate the Euclidean distance between two geographical positions.
      * Expects a JSON payload with two positions, each containing latitude and longitude.
      *{
-     *      *   "position1": {
-     *      *     "lng": -3.192473,
-     *      *     "lat": 55.946233
-     *      *   },
-     *      *   "position2": {
-     *      *     "lng": -3.192473,
-     *      *     "lat": 55.946300
-     *      *   }
-     *      * }
+     *   "position1": {
+     *    "lng": -3.192473,
+     *    "lat": 55.946233
+     *  },
+     *   "position2": {
+     *    "lng": -3.192473,
+     *    "lat": 55.946300
+     *  }
+     * }
      * @param req A LngLatPairRequest object containing two Position objects.
      * @param response HttpServletResponse to set the status code.
      * @return The Euclidean distance as a Double, or a 400 Bad Request status if the input is invalid.
@@ -83,7 +83,7 @@ public class ServiceController {
 
     /**
      * Endpoint to determine if two geographical positions are "close" to each other.
-     * Uses the distanceTo method to calculate the distance and checks if it is below a certain threshold.
+     * Uses the distanceTo method to calculate the distance and checks if it is below 0.00015.
      * Accepts JSON like:
      * {
      *   "position1": {
@@ -169,6 +169,17 @@ public class ServiceController {
             return next;
 
             // Catch any other exceptions and return a 400 Bad Request status
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Exception caught", e);
+            return null;
+        }
+    }
+
+    @PostMapping("/isInRegion")
+    public Boolean isInRegion(@RequestBody IsInRegionRequest req, HttpServletResponse response) {
+        try {
+            return null;
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logger.error("Exception caught", e);
