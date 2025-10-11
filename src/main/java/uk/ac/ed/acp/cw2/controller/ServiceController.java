@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ed.acp.cw2.data.*;
+import java.awt.Polygon;
 
 import java.net.URL;
 
@@ -15,6 +16,12 @@ import java.net.URL;
 public class ServiceController {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
+
+    public static final Boolean VERBOSE = true;
+
+    public static Logger getLogger() {
+        return logger;
+    }
 
     @Value("${ilp.service.url}")
     public URL serviceUrl;
@@ -176,10 +183,60 @@ public class ServiceController {
         }
     }
 
+    /**
+     * Endpoint to determine if a given geographical position is inside a specified region.
+     * The region is defined by a closed polygon with at least 4 vertices (the first and last vertex must be the same).
+     * Accepts JSON like:
+     * {
+     *   "position": {
+     *     "lng": -3.192473,
+     *     "lat": 55.946233
+     *   },
+     *   "region": {
+     *     "name": "Test Region",
+     *     "vertices": [
+     *       {"lng": -3.192000, "lat": 55.946000},
+     *       {"lng": -3.193000, "lat": 55.946000},
+     *       {"lng": -3.193000, "lat": 55.947000},
+     *       {"lng": -3.192000, "lat": 55.947000},
+     *       {"lng": -3.192000, "lat": 55.946000}
+     *     ]
+     *   }
+     * }
+     * @param req An IsInRegionRequest object containing a Position and a Region.
+     * @param response HttpServletResponse to set the status code.
+     * @return A Boolean indicating if the position is inside the region, or a 400 Bad Request status if the input is invalid.
+     */
     @PostMapping("/isInRegion")
     public Boolean isInRegion(@RequestBody IsInRegionRequest req, HttpServletResponse response) {
         try {
-            return null;
+            Boolean errorHandlerIsInRegionRequest = IsInRegionRequest.errorHandler(req);
+            // Validate input, reject if: req, pos, region, lng, lat is NaN or out of bounds
+            if (errorHandlerIsInRegionRequest) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                logger.error("Invalid parameters passed in");
+                return null;
+            }
+
+            Position pos = req.getPosition();
+            Region region = req.getRegion();
+
+            // Create a Polygon object from the region's vertices
+            Polygon polygon = new Polygon();
+            for (Position vertex : region.getVertices()) {
+               /**
+                * Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
+                * int as polygon class requires int parameters, does only work for points with 6 decimal places,
+                * but all coordinates in this project are given with 6 decimal places
+                */
+                polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));
+            }
+
+            // Check if the position is inside the polygon
+            boolean isInside = polygon.contains((int) (pos.getLng() * 1_000_000), (int) (pos.getLat() * 1_000_000));
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            return isInside;
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             logger.error("Exception caught", e);
