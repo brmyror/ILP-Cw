@@ -34,6 +34,13 @@ public class Position {
             } return true;
         }
 
+        // Check if lng or lat is NaN
+        else if (pos.getLng().isNaN() || pos.getLat().isNaN()) {
+            if (ServiceController.VERBOSE) {
+                logger.error("Longitude or Latitude is NaN");
+            } return true;
+        }
+
         // Longitude must be between -180 and 180,
         else if (pos.getLng() > 180 || pos.getLng() < -180) {
             if (ServiceController.VERBOSE) {

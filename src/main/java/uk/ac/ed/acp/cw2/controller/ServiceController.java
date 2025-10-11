@@ -71,6 +71,7 @@ public class ServiceController {
             Boolean errorHandlerDistanceTo = LngLatPairRequest.errorHandler(req);
             // Validate input and reject if: req, pos1, pos2, lng, lat is NaN or out of bounds
             if (errorHandlerDistanceTo) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 logger.error("Invalid position parameters passed in");
                 return null;
             }
@@ -110,6 +111,15 @@ public class ServiceController {
     @PostMapping("/isCloseTo")
     public Boolean isCloseTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
         try {
+
+            Boolean errorHandlerIsCloseTo = LngLatPairRequest.errorHandler(req);
+            // Validate input and reject if: req, pos1, pos2, lng, lat is NaN or out of bounds
+            if (errorHandlerIsCloseTo) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                logger.error("Invalid position parameters passed in");
+                return null;
+            }
+
             // Use the distanceTo method to get the distance between the two positions and
             // check if its < 0.00015
             Boolean isClose = distanceTo(req, response) < 0.00015;
@@ -153,12 +163,6 @@ public class ServiceController {
 
             // Check that given angle is one of 16 cardinal points
             double degrees = req.getAngle();
-            Boolean errorHandlerAngle = Angle.errorHandler(degrees);
-            if (errorHandlerAngle) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                logger.error("Invalid angle passed in");
-                return null;
-            }
 
             final double MOVE_DISTANCE = 0.00015;
 
@@ -223,13 +227,20 @@ public class ServiceController {
 
             // Create a Polygon object from the region's vertices
             Polygon polygon = new Polygon();
-            for (Position vertex : region.getVertices()) {
+            for (Position vertice : region.getVertices()) {
                /**
                 * Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
                 * int as polygon class requires int parameters, does only work for points with 6 decimal places,
                 * but all coordinates in this project are given with 6 decimal places
                 */
-                polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));
+                polygon.addPoint((int) (vertice.getLng() * 1_000_000), (int) (vertice.getLat() * 1_000_000));
+
+                if (vertice.equals(req.getPosition())) {
+                    // If the position is exactly one of the vertices, it is considered inside
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    return true;
+                }
+
             }
 
             // Check if the position is inside the polygon

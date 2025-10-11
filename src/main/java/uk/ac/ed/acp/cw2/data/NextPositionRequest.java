@@ -25,9 +25,17 @@ public class NextPositionRequest {
             } return true;
         }
 
+        else if (Position.errorHandler(req.getStart())) {
+            if (ServiceController.VERBOSE) {
+                logger.error("Start position has error");
+            } return true;
+        }
+
         // Check if angle or start has an error
         else if (Angle.errorHandler(req.getAngle())) {
-            return true;
-        } else return Position.errorHandler(req.getStart());
+            if (ServiceController.VERBOSE) {
+                logger.error("Angle has error");
+            } return true;
+        } return false;
     }
 }
