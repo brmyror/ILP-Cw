@@ -72,6 +72,7 @@ public class ServiceController {
             // Validate input and reject if: req, pos1, pos2, lng, lat is NaN or out of bounds
             if (errorHandlerDistanceTo) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.sendError(400);
                 logger.error("Invalid position parameters passed in");
                 return null;
             }
@@ -116,6 +117,7 @@ public class ServiceController {
             // Validate input and reject if: req, pos1, pos2, lng, lat is NaN or out of bounds
             if (errorHandlerIsCloseTo) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.sendError(400);
                 logger.error("Invalid position parameters passed in");
                 return null;
             }
@@ -157,6 +159,7 @@ public class ServiceController {
             // Validate input, reject if: start, angle, lng, lat is NaN or out of bounds
             if (errorHandlerNextPosition) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.sendError(400);
                 logger.error("Invalid parameters passed in");
                 return null;
             }
@@ -218,6 +221,7 @@ public class ServiceController {
             // Validate input, reject if: req, pos, region, lng, lat is NaN or out of bounds
             if (errorHandlerIsInRegionRequest) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.sendError(400);
                 logger.error("Invalid parameters passed in");
                 return null;
             }
@@ -231,7 +235,9 @@ public class ServiceController {
                /**
                 * Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
                 * int as polygon class requires int parameters, does only work for points with 6 decimal places,
-                * but all coordinates in this project are given with 6 decimal places
+                * but all coordinates in this project seem to be given with 6 decimal places, and on piazza its said,
+                * 6 degrees of precision is enough
+                * https://docs.oracle.com/javase/8/docs/api/java/awt/Polygon.html
                 */
                 polygon.addPoint((int) (vertice.getLng() * 1_000_000), (int) (vertice.getLat() * 1_000_000));
 
