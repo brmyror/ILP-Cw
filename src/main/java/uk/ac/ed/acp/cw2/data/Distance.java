@@ -1,5 +1,7 @@
 package uk.ac.ed.acp.cw2.data;
 
+import uk.ac.ed.acp.cw2.dto.Position;
+
 /**
  * Utility class for calculating distances between two positions.
  */

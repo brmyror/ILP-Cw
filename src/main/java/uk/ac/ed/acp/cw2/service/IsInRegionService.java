@@ -1,0 +1,63 @@
+package uk.ac.ed.acp.cw2.service;
+
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Service;
+import uk.ac.ed.acp.cw2.data.ErrorHandler;
+import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
+import uk.ac.ed.acp.cw2.dto.Position;
+import uk.ac.ed.acp.cw2.dto.Region;
+import org.slf4j.Logger;
+
+
+import java.awt.*;
+
+@Service
+public class IsInRegionService {
+    public static Boolean isInRegion(IsInRegionRequest req, HttpServletResponse response, Logger logger) {
+        try {
+            Boolean errorHandlerIsInRegionRequest = ErrorHandler.isInRegionRequest(req, logger);
+            // Validate input, reject if: req, pos, region, lng, lat is NaN or out of bounds
+            if (errorHandlerIsInRegionRequest) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.sendError(400);
+                logger.error("Invalid parameters passed in");
+                return null;
+            }
+
+            Position pos = req.getPosition();
+            Region region = req.getRegion();
+
+            // Create a Polygon object from the region's vertices
+            Polygon polygon = new Polygon();
+            for (Position vertex : region.getVertices()) {
+                /*
+                  Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
+                  int as polygon class requires int parameters, does only work for points with 6 decimal places,
+                  but all coordinates in this project seem to be given with 6 decimal places, and on piazza its said,
+                  6 degrees of precision is enough
+                  https://docs.oracle.com/javase/8/docs/api/java/awt/Polygon.html
+                 */
+                polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));
+
+                if (vertex.equals(req.getPosition())) {
+                    // If the position is exactly one of the vertices, it is considered inside, as its on an edge
+                    // result of an edge case found while testing
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    return true;
+                }
+
+            }
+
+            // Check if the position is inside the polygon
+            boolean isInside = polygon.contains((int) (pos.getLng() * 1_000_000), (int) (pos.getLat() * 1_000_000));
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            return isInside;
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            logger.error("Exception caught", e);
+            return null;
+        }
+    }
+}
+
