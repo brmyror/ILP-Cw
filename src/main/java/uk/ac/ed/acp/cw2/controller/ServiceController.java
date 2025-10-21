@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ed.acp.cw2.dto.*;
 import uk.ac.ed.acp.cw2.service.*;
 
-import java.awt.Polygon;
-
 import java.net.URL;
 
 
@@ -61,7 +59,7 @@ public class ServiceController {
      */
 
     @PostMapping("/distanceTo")
-    public Double distanceTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
+    public Double distanceTo(@RequestBody PositionPairRequest req, HttpServletResponse response) {
         return DistanceToService.distanceTo(req, response, logger);
     }
 
@@ -85,7 +83,7 @@ public class ServiceController {
      */
 
     @PostMapping("/isCloseTo")
-    public Boolean isCloseTo(@RequestBody LngLatPairRequest req, HttpServletResponse response) {
+    public Boolean isCloseTo(@RequestBody PositionPairRequest req, HttpServletResponse response) {
         return IsCloseToService.isCloseTo(req, response, logger);
     }
 
@@ -106,7 +104,7 @@ public class ServiceController {
      * @return A Position object representing the new position, or a 400 Bad Request status if the input is invalid.
      */
     @PostMapping("/nextPosition")
-    public Position nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
+    public LngLatRequest nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
         return NextPositionService.nextPosition(req, response, logger);
     }
 

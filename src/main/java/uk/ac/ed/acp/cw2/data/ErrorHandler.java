@@ -8,7 +8,7 @@ public class ErrorHandler {
     private static final Boolean VERBOSE = true;
 
     // Error handler for Position objects
-    public static Boolean position(Position pos, Logger logger) {
+    public static Boolean position(LngLatRequest pos, Logger logger) {
 
         // Check if pos is null
         if (pos == null) {
@@ -47,7 +47,7 @@ public class ErrorHandler {
     }
 
     // Error handler for LngLatPairRequest objects
-    public static Boolean lngLatPairRequest(LngLatPairRequest req, Logger logger) {
+    public static Boolean lngLatPairRequest(PositionPairRequest req, Logger logger) {
         // Check if req is null
         if (req == null) {
             if (VERBOSE) {
@@ -56,9 +56,9 @@ public class ErrorHandler {
         }
 
         // Check if pos1 or pos2 has an error
-        else if (position(req.getPosition1(), logger)) {
+        else if (position(req.getLngLatRequest1(), logger)) {
             return true;
-        } else return position(req.getPosition2(), logger);
+        } else return position(req.getLngLatRequest2(), logger);
     }
 
     // Error handler for NextPositionRequest objects
@@ -119,7 +119,7 @@ public class ErrorHandler {
         }
 
         // Check if position has errors
-        else if (position(req.getPosition(), logger)) {
+        else if (position(req.getLngLatRequest(), logger)) {
             return true;
         }
         //return false;
@@ -128,38 +128,38 @@ public class ErrorHandler {
     }
 
     // Error handler for Region objects
-    public static Boolean region(Region region, Logger logger) {
+    public static Boolean region(RegionRequest regionRequest, Logger logger) {
         // Check if region is null
-        if (region == null) {
+        if (regionRequest == null) {
             if (VERBOSE) {
                 logger.error("Region itself null");
             } return true;
         }
 
         // Check if name is null or blank
-        else if (region.getName() == null || region.getName().isEmpty()) {
+        else if (regionRequest.getName() == null || regionRequest.getName().isEmpty()) {
             if (VERBOSE) {
                 logger.error("Region name null or blank");
             } return true;
         }
 
         // Check if vertices is null
-        else if (region.getVertices() == null) {
+        else if (regionRequest.getVertices() == null) {
             if (VERBOSE) {
                 logger.error("Region vertices null");
             } return true;
         }
 
         // Check if vertices has less than 4 positions as region must be a closed polygon (triangle and closing point)
-        else if (region.getVertices().length < 4) {
+        else if (regionRequest.getVertices().length < 4) {
             if (VERBOSE) {
                 logger.error("Region vertices has less than 4 positions");
             } return true;
         }
 
         // Check if the first and last positions exist and are the same (closed polygon)
-        Position first = region.getVertices()[0];
-        Position last = region.getVertices()[region.getVertices().length - 1];
+        LngLatRequest first = regionRequest.getVertices()[0];
+        LngLatRequest last = regionRequest.getVertices()[regionRequest.getVertices().length - 1];
         if (first == null || last == null) {
             if (VERBOSE) {
                 logger.error("First or last position in vertices is null");
@@ -173,7 +173,7 @@ public class ErrorHandler {
 
         // Check if any position in vertices has an error
         int index = 1;
-        for (Position pos : region.getVertices()) {
+        for (LngLatRequest pos : regionRequest.getVertices()) {
             if (position(pos, logger)) {
                 if (VERBOSE) {
                     logger.error("Position {} in vertices has an error", index);

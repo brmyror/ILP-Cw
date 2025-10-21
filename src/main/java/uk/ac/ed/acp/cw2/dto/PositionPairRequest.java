@@ -6,10 +6,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LngLatPairRequest {
+public class PositionPairRequest {
     @JsonProperty("position1")
-    private Position position1;
+    private LngLatRequest lngLatRequest1;
 
     @JsonProperty("position2")
-    private Position position2;
+    private LngLatRequest lngLatRequest2;
 }

@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
 import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
-import uk.ac.ed.acp.cw2.dto.Position;
-import uk.ac.ed.acp.cw2.dto.Region;
+import uk.ac.ed.acp.cw2.dto.LngLatRequest;
+import uk.ac.ed.acp.cw2.dto.RegionRequest;
 import org.slf4j.Logger;
 
 
@@ -20,16 +20,16 @@ public class IsInRegionService {
             if (errorHandlerIsInRegionRequest) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.sendError(400);
-                logger.error("Invalid parameters passed in");
+                logger.error("Invalid position or region parameters passed in \n");
                 return null;
             }
 
-            Position pos = req.getPosition();
-            Region region = req.getRegion();
+            LngLatRequest pos = req.getLngLatRequest();
+            RegionRequest regionRequest = req.getRegion();
 
             // Create a Polygon object from the region's vertices
             Polygon polygon = new Polygon();
-            for (Position vertex : region.getVertices()) {
+            for (LngLatRequest vertex : regionRequest.getVertices()) {
                 /*
                   Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
                   int as polygon class requires int parameters, does only work for points with 6 decimal places,
@@ -39,7 +39,7 @@ public class IsInRegionService {
                  */
                 polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));
 
-                if (vertex.equals(req.getPosition())) {
+                if (vertex.equals(req.getLngLatRequest())) {
                     // If the position is exactly one of the vertices, it is considered inside, as its on an edge
                     // result of an edge case found while testing
                     response.setStatus(HttpServletResponse.SC_OK);
@@ -55,7 +55,7 @@ public class IsInRegionService {
             return isInside;
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            logger.error("Exception caught", e);
+            logger.error("Exception caught \n", e);
             return null;
         }
     }

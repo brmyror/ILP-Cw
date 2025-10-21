@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 // creates the equals and hashcode methods to then be used in isInRegion method
 // https://www.baeldung.com/java-lombok-equalsandhashcode
 @EqualsAndHashCode(of = {"lng", "lat"})
-public class Position {
+public class LngLatRequest {
     @JsonProperty("lng")
     private Double lng;
 

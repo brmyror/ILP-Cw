@@ -4,19 +4,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
 import uk.ac.ed.acp.cw2.dto.NextPositionRequest;
-import uk.ac.ed.acp.cw2.dto.Position;
+import uk.ac.ed.acp.cw2.dto.LngLatRequest;
 import org.slf4j.Logger;
 
 @Service
 public class NextPositionService {
-    public static Position nextPosition(NextPositionRequest req, HttpServletResponse response, Logger logger) {
+    public static LngLatRequest nextPosition(NextPositionRequest req, HttpServletResponse response, Logger logger) {
         try {
             Boolean errorHandlerNextPosition = ErrorHandler.nextPositionRequest(req, logger);
             // Validate input, reject if: start, angle, lng, lat is NaN or out of bounds
             if (errorHandlerNextPosition) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.sendError(400);
-                logger.error("Invalid parameters passed in");
+                logger.error("Invalid position or angle parameters passed in \n");
                 return null;
             }
 
@@ -29,16 +29,16 @@ public class NextPositionService {
             double changeInLng = MOVE_DISTANCE * Math.cos(degrees);
             double changeInLat = MOVE_DISTANCE * Math.sin(degrees);
 
-            Position start = req.getStart();
+            LngLatRequest start = req.getStart();
 
             response.setStatus(HttpServletResponse.SC_OK);
             // build and return the new Position
-            return Position.builder().lng(start.getLng() + changeInLng).lat(start.getLat() + changeInLat).build();
+            return LngLatRequest.builder().lng(start.getLng() + changeInLng).lat(start.getLat() + changeInLat).build();
 
             // Catch any other exceptions and return a 400 Bad Request status
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            logger.error("Exception caught", e);
+            logger.error("Exception caught \n", e);
             return null;
         }
     }

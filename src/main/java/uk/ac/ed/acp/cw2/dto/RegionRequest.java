@@ -6,10 +6,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Region {
+public class RegionRequest {
     @JsonProperty("name")
     private String name;
 
     @JsonProperty("vertices")
-    private Position[] vertices;
+    private LngLatRequest[] vertices;
 }
