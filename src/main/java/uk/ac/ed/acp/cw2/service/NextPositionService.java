@@ -25,9 +25,11 @@ public class NextPositionService {
 
             final double MOVE_DISTANCE = 0.00015;
 
-            // Calculate the change in latitude and longitude based on the angle
-            double changeInLng = MOVE_DISTANCE * Math.cos(degrees);
-            double changeInLat = MOVE_DISTANCE * Math.sin(degrees);
+            // Calculate the change in latitude and longitude based on the angle converted to radians as
+            // the trigonometric functions in Java uses radians
+            double rad = Math.toRadians(degrees);
+            double changeInLng = MOVE_DISTANCE * Math.cos(rad);
+            double changeInLat = MOVE_DISTANCE * Math.sin(rad);
 
             LngLatRequest start = req.getStart();
 

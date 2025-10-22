@@ -3,12 +3,15 @@ package uk.ac.ed.acp.cw2.data;
 import org.slf4j.Logger;
 import uk.ac.ed.acp.cw2.dto.*;
 
+/**
+ * ErrorHandler class containing static methods to validate various request objects.
+ */
 public class ErrorHandler {
 
     private static final Boolean VERBOSE = true;
 
     // Error handler for Position objects
-    public static Boolean position(LngLatRequest pos, Logger logger) {
+    public static Boolean lngLatRequest(LngLatRequest pos, Logger logger) {
 
         // Check if pos is null
         if (pos == null) {
@@ -46,8 +49,8 @@ public class ErrorHandler {
         } return false;
     }
 
-    // Error handler for LngLatPairRequest objects
-    public static Boolean lngLatPairRequest(PositionPairRequest req, Logger logger) {
+    // Error handler for positionPairRequest objects
+    public static Boolean positionPairRequest(PositionPairRequest req, Logger logger) {
         // Check if req is null
         if (req == null) {
             if (VERBOSE) {
@@ -56,9 +59,9 @@ public class ErrorHandler {
         }
 
         // Check if pos1 or pos2 has an error
-        else if (position(req.getLngLatRequest1(), logger)) {
+        else if (lngLatRequest(req.getLngLatRequest1(), logger)) {
             return true;
-        } else return position(req.getLngLatRequest2(), logger);
+        } else return lngLatRequest(req.getLngLatRequest2(), logger);
     }
 
     // Error handler for NextPositionRequest objects
@@ -70,13 +73,14 @@ public class ErrorHandler {
             } return true;
         }
 
-        else if (position(req.getStart(), logger)) {
+        // Check if start has an error
+        else if (lngLatRequest(req.getStart(), logger)) {
             if (VERBOSE) {
                 logger.error("Start position has error");
             } return true;
         }
 
-        // Check if angle or start has an error
+        // Check if angle has an error
         else if (angle(req.getAngle(), logger)) {
             if (VERBOSE) {
                 logger.error("Angle has error");
@@ -86,8 +90,8 @@ public class ErrorHandler {
 
     // Error handler for angle in degrees
     public static Boolean angle(Double degrees, Logger logger) {
-        // check if degrees is null
-        if (degrees == null) {
+        // check if degrees is null or NaN
+        if (degrees == null || degrees.isNaN()) {
             if (VERBOSE) {
                 logger.error("degrees is null");
             } return true;
@@ -119,7 +123,7 @@ public class ErrorHandler {
         }
 
         // Check if position has errors
-        else if (position(req.getLngLatRequest(), logger)) {
+        else if (lngLatRequest(req.getLngLatRequest(), logger)) {
             return true;
         }
         //return false;
@@ -165,7 +169,7 @@ public class ErrorHandler {
                 logger.error("First or last position in vertices is null");
             } return true;
         }
-        if (!first.equals(last)) {
+        if (!first.getLat().equals(last.getLat()) || !first.getLng().equals(last.getLng())) {
             if (VERBOSE) {
                 logger.error("First and last position in vertices are not the same");
             } return true;
@@ -174,7 +178,7 @@ public class ErrorHandler {
         // Check if any position in vertices has an error
         int index = 1;
         for (LngLatRequest pos : regionRequest.getVertices()) {
-            if (position(pos, logger)) {
+            if (lngLatRequest(pos, logger)) {
                 if (VERBOSE) {
                     logger.error("Position {} in vertices has an error", index);
                 } return true;

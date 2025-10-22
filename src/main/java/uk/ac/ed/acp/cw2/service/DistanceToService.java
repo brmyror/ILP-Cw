@@ -12,7 +12,7 @@ public class DistanceToService {
     public static Double distanceTo(PositionPairRequest req, HttpServletResponse response, Logger logger) {
         try {
 
-            Boolean errorHandlerDistanceTo = ErrorHandler.lngLatPairRequest(req, logger);
+            Boolean errorHandlerDistanceTo = ErrorHandler.positionPairRequest(req, logger);
             // Validate input and reject if: req, pos1, pos2, lng, lat is NaN or out of bounds
             if (errorHandlerDistanceTo) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

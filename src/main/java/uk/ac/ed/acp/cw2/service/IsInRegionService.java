@@ -32,9 +32,9 @@ public class IsInRegionService {
             for (LngLatRequest vertex : regionRequest.getVertices()) {
                 /*
                   Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
-                  int as polygon class requires int parameters, does only work for points with 6 decimal places,
-                  but all coordinates in this project seem to be given with 6 decimal places, and on piazza its said,
-                  6 degrees of precision is enough
+                  int as polygon class requires int parameters, but all coordinates in this project seem to be given
+                  and on piazza its said, 6 degrees of precision is enough, and when type cast to int after multiplying by
+                  1,000,000, we still have 6 digits after decimal point preserved.
                   https://docs.oracle.com/javase/8/docs/api/java/awt/Polygon.html
                  */
                 polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));
