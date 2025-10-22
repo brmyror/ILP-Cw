@@ -39,7 +39,7 @@ public class IsInRegionService {
                  */
                 polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));
 
-                if (vertex.equals(req.getLngLatRequest())) {
+                if (vertex.getLat().equals(pos.getLat()) && vertex.getLng().equals(pos.getLng())) {
                     // If the position is exactly one of the vertices, it is considered inside, as its on an edge
                     // result of an edge case found while testing
                     response.setStatus(HttpServletResponse.SC_OK);

@@ -54,6 +54,28 @@ class IsInRegionServiceTest extends BaseServiceTest {
         assertTrue(isInRegion);
     }
 
+    // Test valid isInRegion service call where point is at vertex of region
+    @Test
+    void pointAtVertexOfRegionReturnsTrue() {
+        LngLatRequest pos = LngLatRequest.builder().lng(-3.192473).lat(55.946233).build();
+        LngLatRequest[] vertices = new LngLatRequest[]{
+                LngLatRequest.builder().lng(-3.192473).lat(55.946233).build(),
+                LngLatRequest.builder().lng(-3.192473).lat(55.942617).build(),
+                LngLatRequest.builder().lng(-3.184319).lat(55.942617).build(),
+                LngLatRequest.builder().lng(-3.184319).lat(55.946233).build(),
+                LngLatRequest.builder().lng(-3.192473).lat(55.946233).build()
+        };
+        var region = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+
+        var req = IsInRegionRequest.builder().lngLatRequest(pos).region(region).build();
+
+        Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        assertNotNull(isInRegion);
+        assertTrue(isInRegion);
+    }
+
     // Test valid isInRegion service call where point is outside region
     @Test
     void pointOutsideRegionReturnsFalse() {
