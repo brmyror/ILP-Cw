@@ -136,4 +136,14 @@ public class ServiceController {
     public Boolean isInRegion(@RequestBody IsInRegionRequest req, HttpServletResponse response) {
         return IsInRegionService.isInRegion(req, response, logger);
     }
+
+    @GetMapping("/dronesWithCooling/{state}")
+    public DroneID[] dronesWithCooling(@PathVariable String state) {
+        return DronesWithCoolingService.dronesWithCooling(state, logger);
+    }
+
+    @GetMapping("/droneDetails/{id}")
+    public Drone droneDetails(@PathVariable String id) {
+        return DroneDetailsService.droneDetails(id, logger);
+    }
 }
