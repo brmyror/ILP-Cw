@@ -2,13 +2,11 @@ package uk.ac.ed.acp.cw2.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import uk.ac.ed.acp.cw2.dto.DroneDto;
 import uk.ac.ed.acp.cw2.dto.DroneServicePointDto;
-import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.mapper.DroneMapper;
 import uk.ac.ed.acp.cw2.mapper.DroneServicePointMapper;
 import uk.ac.ed.acp.cw2.repository.DroneRepository;
@@ -16,8 +14,6 @@ import uk.ac.ed.acp.cw2.repository.DroneServicePointAvailabilityRepository;
 import uk.ac.ed.acp.cw2.repository.DroneServicePointRepository;
 
 import java.util.List;
-
-import static org.springframework.data.jpa.domain.Specification.where;
 
 @Slf4j
 @RequiredArgsConstructor

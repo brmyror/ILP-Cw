@@ -3,7 +3,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import uk.ac.ed.acp.cw2.dto.DroneServicePointDto;
 import uk.ac.ed.acp.cw2.entity.DroneServicePoint;
-import uk.ac.ed.acp.cw2.dto.LngLatAlt;
 
 import java.util.List;
 
