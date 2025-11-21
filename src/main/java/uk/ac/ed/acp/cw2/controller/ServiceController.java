@@ -59,7 +59,7 @@ public class ServiceController {
      */
 
     @PostMapping("/distanceTo")
-    public Double distanceTo(@RequestBody PositionPairRequest req, HttpServletResponse response) {
+    public Double distanceTo(@RequestBody PositionPair req, HttpServletResponse response) {
         return DistanceToService.distanceTo(req, response, logger);
     }
 
@@ -83,7 +83,7 @@ public class ServiceController {
      */
 
     @PostMapping("/isCloseTo")
-    public Boolean isCloseTo(@RequestBody PositionPairRequest req, HttpServletResponse response) {
+    public Boolean isCloseTo(@RequestBody PositionPair req, HttpServletResponse response) {
         return IsCloseToService.isCloseTo(req, response, logger);
     }
 
@@ -99,12 +99,12 @@ public class ServiceController {
      *   },
      *   "angle": 90
      * }
-     * @param req A NextPositionRequest object containing a starting Position and an angle in degrees.
+     * @param req A NextPosition object containing a starting Position and an angle in degrees.
      * @param response HttpServletResponse to set the status code.
      * @return A Position object representing the new position, or a 400 Bad Request status if the input is invalid.
      */
     @PostMapping("/nextPosition")
-    public LngLatRequest nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
+    public LngLat nextPosition(@RequestBody NextPosition req, HttpServletResponse response) {
         return NextPositionService.nextPosition(req, response, logger);
     }
 
@@ -128,15 +128,16 @@ public class ServiceController {
      *     ]
      *   }
      * }
-     * @param req An IsInRegionRequest object containing a Position and a Region.
+     * @param req An IsInRegion object containing a Position and a Region.
      * @param response HttpServletResponse to set the status code.
      * @return A Boolean indicating if the position is inside the region, or a 400 Bad Request status if the input is invalid.
      */
     @PostMapping("/isInRegion")
-    public Boolean isInRegion(@RequestBody IsInRegionRequest req, HttpServletResponse response) {
+    public Boolean isInRegion(@RequestBody IsInRegion req, HttpServletResponse response) {
         return IsInRegionService.isInRegion(req, response, logger);
     }
 
+    /**
     @GetMapping("/dronesWithCooling/{state}")
     public DroneID[] dronesWithCooling(@PathVariable String state) {
         return DronesWithCoolingService.dronesWithCooling(state, logger);
@@ -146,4 +147,5 @@ public class ServiceController {
     public Drone droneDetails(@PathVariable String id) {
         return DroneDetailsService.droneDetails(id, logger);
     }
+    **/
 }

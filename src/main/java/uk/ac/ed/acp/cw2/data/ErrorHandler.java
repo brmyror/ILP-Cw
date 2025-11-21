@@ -11,7 +11,7 @@ public class ErrorHandler {
     private static final Boolean VERBOSE = true;
 
     // Error handler for Position objects
-    public static Boolean lngLatRequest(LngLatRequest pos, Logger logger) {
+    public static Boolean lngLatRequest(LngLat pos, Logger logger) {
 
         // Check if pos is null
         if (pos == null) {
@@ -50,7 +50,7 @@ public class ErrorHandler {
     }
 
     // Error handler for positionPairRequest objects
-    public static Boolean positionPairRequest(PositionPairRequest req, Logger logger) {
+    public static Boolean positionPairRequest(PositionPair req, Logger logger) {
         // Check if req is null
         if (req == null) {
             if (VERBOSE) {
@@ -59,17 +59,17 @@ public class ErrorHandler {
         }
 
         // Check if pos1 or pos2 has an error
-        else if (lngLatRequest(req.getLngLatRequest1(), logger)) {
+        else if (lngLatRequest(req.getLngLat1(), logger)) {
             return true;
-        } else return lngLatRequest(req.getLngLatRequest2(), logger);
+        } else return lngLatRequest(req.getLngLat2(), logger);
     }
 
-    // Error handler for NextPositionRequest objects
-    public static Boolean nextPositionRequest(NextPositionRequest req, Logger logger) {
+    // Error handler for NextPosition objects
+    public static Boolean nextPositionRequest(NextPosition req, Logger logger) {
         // Check if req is null
         if (req == null) {
             if (VERBOSE) {
-                logger.error("NextPositionRequest itself null");
+                logger.error("NextPosition itself null");
             } return true;
         }
 
@@ -113,17 +113,17 @@ public class ErrorHandler {
         } return false;
     }
 
-    // Error handler for IsInRegionRequest objects
-    public static Boolean isInRegionRequest(IsInRegionRequest req, Logger logger) {
+    // Error handler for IsInRegion objects
+    public static Boolean isInRegionRequest(IsInRegion req, Logger logger) {
         // Check if req is null
         if (req == null ) {
             if (VERBOSE) {
-                logger.error("IsInRegionRequest itself null");
+                logger.error("IsInRegion itself null");
             } return true;
         }
 
         // Check if position has errors
-        else if (lngLatRequest(req.getLngLatRequest(), logger)) {
+        else if (lngLatRequest(req.getLngLat(), logger)) {
             return true;
         }
         //return false;
@@ -132,38 +132,38 @@ public class ErrorHandler {
     }
 
     // Error handler for Region objects
-    public static Boolean region(RegionRequest regionRequest, Logger logger) {
+    public static Boolean region(Region region, Logger logger) {
         // Check if region is null
-        if (regionRequest == null) {
+        if (region == null) {
             if (VERBOSE) {
                 logger.error("Region itself null");
             } return true;
         }
 
         // Check if name is null or blank
-        else if (regionRequest.getName() == null || regionRequest.getName().isEmpty()) {
+        else if (region.getName() == null || region.getName().isEmpty()) {
             if (VERBOSE) {
                 logger.error("Region name null or blank");
             } return true;
         }
 
         // Check if vertices is null
-        else if (regionRequest.getVertices() == null) {
+        else if (region.getVertices() == null) {
             if (VERBOSE) {
                 logger.error("Region vertices null");
             } return true;
         }
 
         // Check if vertices has less than 4 positions as region must be a closed polygon (triangle and closing point)
-        else if (regionRequest.getVertices().length < 4) {
+        else if (region.getVertices().length < 4) {
             if (VERBOSE) {
                 logger.error("Region vertices has less than 4 positions");
             } return true;
         }
 
         // Check if the first and last positions exist and are the same (closed polygon)
-        LngLatRequest first = regionRequest.getVertices()[0];
-        LngLatRequest last = regionRequest.getVertices()[regionRequest.getVertices().length - 1];
+        LngLat first = region.getVertices()[0];
+        LngLat last = region.getVertices()[region.getVertices().length - 1];
         if (first == null || last == null) {
             if (VERBOSE) {
                 logger.error("First or last position in vertices is null");
@@ -177,7 +177,7 @@ public class ErrorHandler {
 
         // Check if any position in vertices has an error
         int index = 1;
-        for (LngLatRequest pos : regionRequest.getVertices()) {
+        for (LngLat pos : region.getVertices()) {
             if (lngLatRequest(pos, logger)) {
                 if (VERBOSE) {
                     logger.error("Position {} in vertices has an error", index);

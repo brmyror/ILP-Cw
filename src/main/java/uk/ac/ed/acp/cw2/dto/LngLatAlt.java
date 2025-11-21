@@ -6,16 +6,19 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * DTO for a longitude and latitude position.
+ * DTO for a longitude, latitude, and altitude position.
  */
 @Getter
 @Setter
 @Builder
-public class LngLatRequest {
+public class LngLatAlt {
     @JsonProperty("lng")
     private Double lng;
 
     @JsonProperty("lat")
     private Double lat;
+
+    @JsonProperty("alt")
+    private Integer alt;
 
 }

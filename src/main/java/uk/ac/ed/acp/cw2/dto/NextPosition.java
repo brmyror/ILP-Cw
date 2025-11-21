@@ -11,9 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class NextPositionRequest {
+public class NextPosition {
     @JsonProperty("start")
-    private LngLatRequest start;
+    private LngLat start;
 
     @JsonProperty("angle")
     private Double angle;

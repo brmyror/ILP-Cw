@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DiffGenerationConfig">
+    <option name="snapshotDbValue" value="2e55a41a-421f-44d4-9207-415c75907967" />
+    <option name="snapshotDirValue" value="$PROJECT_DIR$/src/main/resources/db.changelog" />
+  </component>
+</project>

@@ -11,10 +11,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class IsInRegionRequest {
+public class IsInRegion {
     @JsonProperty("position")
-    private LngLatRequest lngLatRequest;
+    private LngLat lngLat;
 
     @JsonProperty("region")
-    private RegionRequest region;
+    private Region region;
 }

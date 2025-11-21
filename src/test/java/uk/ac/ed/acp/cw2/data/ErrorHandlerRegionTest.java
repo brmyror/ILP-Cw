@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Unit tests for ErrorHandler Region request validation
-class ErrorHandlerRegionRequestTest {
+class ErrorHandlerRegionTest {
 
     // Test for null region request
     @ParameterizedTest
     @CsvSource({"true", "false"})
     void regionNullTest(Boolean isNull) {
-        RegionRequest req = isNull ? null : RegionRequest.builder().build();
+        Region req = isNull ? null : Region.builder().build();
         assertTrue(ErrorHandler.region(req, LoggerFactory.getLogger("test")));
     }
 
@@ -25,7 +25,7 @@ class ErrorHandlerRegionRequestTest {
     @CsvSource({"true", "false"})
     void regionInvalidNameTest(Boolean isNull) {
         String name = isNull ? null : "";
-        var req = RegionRequest.builder().name(name).build();
+        var req = Region.builder().name(name).build();
         assertTrue(ErrorHandler.region(req, LoggerFactory.getLogger("test")));
     }
 
@@ -33,8 +33,8 @@ class ErrorHandlerRegionRequestTest {
     @ParameterizedTest
     @CsvSource({"true", "false"})
     void regionInvalidVerticesTest(Boolean isNull) {
-        LngLatRequest[] vertices = isNull ? null : new LngLatRequest[] { LngLatRequest.builder().build() };
-        var req = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        LngLat[] vertices = isNull ? null : new LngLat[] { LngLat.builder().build() };
+        var req = Region.builder().name("TestRegion").vertices(vertices).build();
         assertTrue(ErrorHandler.region(req, LoggerFactory.getLogger("test")));
     }
 
@@ -42,36 +42,36 @@ class ErrorHandlerRegionRequestTest {
     @ParameterizedTest
     @CsvSource({"0", "1", "2"})
     void regionInsufficientVerticesTest(int vertexCount) {
-        LngLatRequest[] vertices = new LngLatRequest[vertexCount];
+        LngLat[] vertices = new LngLat[vertexCount];
         for (int i = 0; i < vertexCount; i++) {
-            vertices[i] = LngLatRequest.builder().lng(0.0).lat(0.0).build();
+            vertices[i] = LngLat.builder().lng(0.0).lat(0.0).build();
         }
-        var req = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var req = Region.builder().name("TestRegion").vertices(vertices).build();
         assertTrue(ErrorHandler.region(req, LoggerFactory.getLogger("test")));
     }
 
     // Test for region request with non-closed polygon
     @Test
     void regionNonClosedPolygonTest() {
-        LngLatRequest[] vertices = new LngLatRequest[] {
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(1.0).build()
+        LngLat[] vertices = new LngLat[] {
+                LngLat.builder().lng(-1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(1.0).build()
         };
-        var req = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var req = Region.builder().name("TestRegion").vertices(vertices).build();
         assertTrue(ErrorHandler.region(req, LoggerFactory.getLogger("test")));
     }
 
     // Test for region request with valid vertices
     @Test
     void regionValidTest() {
-        LngLatRequest[] vertices = new LngLatRequest[] {
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(1.0).build(),
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build()
+        LngLat[] vertices = new LngLat[] {
+                LngLat.builder().lng(-1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(1.0).build(),
+                LngLat.builder().lng(-1.0).lat(-1.0).build()
         };
-        var req = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var req = Region.builder().name("TestRegion").vertices(vertices).build();
         assertFalse(ErrorHandler.region(req, LoggerFactory.getLogger("test")));
     }
 }

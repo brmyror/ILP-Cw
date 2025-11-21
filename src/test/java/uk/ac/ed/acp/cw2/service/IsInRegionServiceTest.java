@@ -2,9 +2,9 @@ package uk.ac.ed.acp.cw2.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
-import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
-import uk.ac.ed.acp.cw2.dto.LngLatRequest;
-import uk.ac.ed.acp.cw2.dto.RegionRequest;
+import uk.ac.ed.acp.cw2.dto.IsInRegion;
+import uk.ac.ed.acp.cw2.dto.LngLat;
+import uk.ac.ed.acp.cw2.dto.Region;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -15,16 +15,16 @@ class IsInRegionServiceTest extends BaseServiceTest {
     // Test valid isInRegion service call where point is inside region
     @Test
     void pointInsideRegionReturnsTrue() {
-        LngLatRequest pos = LngLatRequest.builder().lng(0.0).lat(0.0).build();
-        LngLatRequest[] vertices = new LngLatRequest[]{
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(1.0).build(),
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build()
+        LngLat pos = LngLat.builder().lng(0.0).lat(0.0).build();
+        LngLat[] vertices = new LngLat[]{
+                LngLat.builder().lng(-1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(1.0).build(),
+                LngLat.builder().lng(-1.0).lat(-1.0).build()
         };
-        var region = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegionRequest.builder().lngLatRequest(pos).region(region).build();
+        var req = IsInRegion.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -36,16 +36,16 @@ class IsInRegionServiceTest extends BaseServiceTest {
     // Test valid isInRegion service call where point is on edge of region
     @Test
     void pointOnEdgeOfRegionReturnsTrue() {
-        LngLatRequest pos = LngLatRequest.builder().lng(-1.0).lat(-1.0).build();
-        LngLatRequest[] vertices = new LngLatRequest[]{
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(1.0).build(),
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build()
+        LngLat pos = LngLat.builder().lng(-1.0).lat(-1.0).build();
+        LngLat[] vertices = new LngLat[]{
+                LngLat.builder().lng(-1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(1.0).build(),
+                LngLat.builder().lng(-1.0).lat(-1.0).build()
         };
-        var region = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegionRequest.builder().lngLatRequest(pos).region(region).build();
+        var req = IsInRegion.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -57,17 +57,17 @@ class IsInRegionServiceTest extends BaseServiceTest {
     // Test valid isInRegion service call where point is at vertex of region
     @Test
     void pointAtVertexOfRegionReturnsTrue() {
-        LngLatRequest pos = LngLatRequest.builder().lng(-3.192473).lat(55.946233).build();
-        LngLatRequest[] vertices = new LngLatRequest[]{
-                LngLatRequest.builder().lng(-3.192473).lat(55.946233).build(),
-                LngLatRequest.builder().lng(-3.192473).lat(55.942617).build(),
-                LngLatRequest.builder().lng(-3.184319).lat(55.942617).build(),
-                LngLatRequest.builder().lng(-3.184319).lat(55.946233).build(),
-                LngLatRequest.builder().lng(-3.192473).lat(55.946233).build()
+        LngLat pos = LngLat.builder().lng(-3.192473).lat(55.946233).build();
+        LngLat[] vertices = new LngLat[]{
+                LngLat.builder().lng(-3.192473).lat(55.946233).build(),
+                LngLat.builder().lng(-3.192473).lat(55.942617).build(),
+                LngLat.builder().lng(-3.184319).lat(55.942617).build(),
+                LngLat.builder().lng(-3.184319).lat(55.946233).build(),
+                LngLat.builder().lng(-3.192473).lat(55.946233).build()
         };
-        var region = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegionRequest.builder().lngLatRequest(pos).region(region).build();
+        var req = IsInRegion.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -79,16 +79,16 @@ class IsInRegionServiceTest extends BaseServiceTest {
     // Test valid isInRegion service call where point is outside region
     @Test
     void pointOutsideRegionReturnsFalse() {
-        LngLatRequest pos = LngLatRequest.builder().lng(2.0).lat(2.0).build();
-        LngLatRequest[] vertices = new LngLatRequest[]{
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(-1.0).build(),
-                LngLatRequest.builder().lng(1.0).lat(1.0).build(),
-                LngLatRequest.builder().lng(-1.0).lat(-1.0).build()
+        LngLat pos = LngLat.builder().lng(2.0).lat(2.0).build();
+        LngLat[] vertices = new LngLat[]{
+                LngLat.builder().lng(-1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(-1.0).build(),
+                LngLat.builder().lng(1.0).lat(1.0).build(),
+                LngLat.builder().lng(-1.0).lat(-1.0).build()
         };
-        var region = RegionRequest.builder().name("TestRegion").vertices(vertices).build();
+        var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegionRequest.builder().lngLatRequest(pos).region(region).build();
+        var req = IsInRegion.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -100,10 +100,10 @@ class IsInRegionServiceTest extends BaseServiceTest {
     // Test invalid isInRegion service call
     @Test
     void invalidIsInRegionRequestReturns400AndNull() {
-        LngLatRequest pos = LngLatRequest.builder().build(); // invalid position
-        var region = RegionRequest.builder().name("TestRegion").vertices(new LngLatRequest[0]).build();
+        LngLat pos = LngLat.builder().build(); // invalid position
+        var region = Region.builder().name("TestRegion").vertices(new LngLat[0]).build();
 
-        var req = IsInRegionRequest.builder().lngLatRequest(pos).region(region).build();
+        var req = IsInRegion.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 

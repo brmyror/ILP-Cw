@@ -4,12 +4,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.Distance;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
-import uk.ac.ed.acp.cw2.dto.PositionPairRequest;
+import uk.ac.ed.acp.cw2.dto.PositionPair;
 import org.slf4j.Logger;
 
 @Service
 public class DistanceToService {
-    public static Double distanceTo(PositionPairRequest req, HttpServletResponse response, Logger logger) {
+    public static Double distanceTo(PositionPair req, HttpServletResponse response, Logger logger) {
         try {
 
             Boolean errorHandlerDistanceTo = ErrorHandler.positionPairRequest(req, logger);
@@ -22,7 +22,7 @@ public class DistanceToService {
             }
 
             // Calculate and return Euclidean distance
-            double distance = Distance.calculateEuclideanDistance(req.getLngLatRequest1(), req.getLngLatRequest2());
+            double distance = Distance.calculateEuclideanDistance(req.getLngLat1(), req.getLngLat2());
             response.setStatus(HttpServletResponse.SC_OK);
             return distance;
 

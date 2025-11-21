@@ -5,16 +5,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO for Region request containing a name and an array of vertices.
+ */
 @Getter
 @Setter
 @Builder
-public class DroneRequest {
+public class Region {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("id")
-    private Integer id;
-
-    @JsonProperty("capability")
-    private CapabilityRequest capability;
+    @JsonProperty("vertices")
+    private LngLat[] vertices;
 }

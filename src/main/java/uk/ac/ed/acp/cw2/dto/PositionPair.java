@@ -11,10 +11,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class PositionPairRequest {
+public class PositionPair {
     @JsonProperty("position1")
-    private LngLatRequest lngLatRequest1;
+    private LngLat lngLat1;
 
     @JsonProperty("position2")
-    private LngLatRequest lngLatRequest2;
+    private LngLat lngLat2;
 }

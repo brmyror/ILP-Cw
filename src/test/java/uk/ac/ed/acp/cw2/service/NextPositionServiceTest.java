@@ -2,8 +2,8 @@ package uk.ac.ed.acp.cw2.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
-import uk.ac.ed.acp.cw2.dto.LngLatRequest;
-import uk.ac.ed.acp.cw2.dto.NextPositionRequest;
+import uk.ac.ed.acp.cw2.dto.LngLat;
+import uk.ac.ed.acp.cw2.dto.NextPosition;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -14,10 +14,10 @@ class NextPositionServiceTest extends BaseServiceTest {
     // Test valid nextPosition service call
     @Test
     void validNextPositionRequestReturns200AndNewPosition() {
-        var start = LngLatRequest.builder().lng(-3.192473).lat(55.946233).build();
-        var req = NextPositionRequest.builder().start(start).angle(90.0).build();
+        var start = LngLat.builder().lng(-3.192473).lat(55.946233).build();
+        var req = NextPosition.builder().start(start).angle(90.0).build();
 
-        LngLatRequest nextPosition = NextPositionService.nextPosition(req, response, logger);
+        LngLat nextPosition = NextPositionService.nextPosition(req, response, logger);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         assertNotNull(nextPosition);
@@ -28,10 +28,10 @@ class NextPositionServiceTest extends BaseServiceTest {
     // Test invalid nextPosition service call
     @Test
     void invalidNextPositionRequestReturns400AndNull() {
-        var start = LngLatRequest.builder().build(); // invalid start position
-        var req = NextPositionRequest.builder().start(start).angle(Double.NaN).build();
+        var start = LngLat.builder().build(); // invalid start position
+        var req = NextPosition.builder().start(start).angle(Double.NaN).build();
 
-        LngLatRequest newPosition = NextPositionService.nextPosition(req, response, logger);
+        LngLat newPosition = NextPositionService.nextPosition(req, response, logger);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
         assertNull(newPosition);
