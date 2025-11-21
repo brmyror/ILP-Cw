@@ -6,8 +6,8 @@ create SCHEMA IF NOT EXISTS ilp;
 CREATE TABLE IF NOT EXISTS ilp.drone_service_points (
     id int primary key,
     name varchar(100) not null,
-    latitude decimal(9,6) not null,
-    longitude decimal(9,6) not null,
+    latitude numeric(18,14) not null,
+    longitude numeric(18,14) not null,
     altitude integer not null
 );
 
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS ilp.drones (
     heating boolean default false not null,
     capacity numeric(10,2) not null,
     max_moves integer not null,
-    cost_per_move numeric(10,2) not null,
+    cost_per_move numeric(10,3) not null,
     cost_initial numeric(10,2) not null,
     cost_final numeric(10,2) not null
 );

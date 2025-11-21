@@ -19,10 +19,10 @@ public class DroneServicePoint {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "latitude", nullable = false, precision = 9, scale = 6)
+    @Column(name = "latitude", nullable = false)
     private Double latitude;
 
-    @Column(name = "longitude", nullable = false, precision = 9, scale = 6)
+    @Column(name = "longitude", nullable = false)
     private Double longitude;
 
     @Column(name = "altitude", nullable = false)

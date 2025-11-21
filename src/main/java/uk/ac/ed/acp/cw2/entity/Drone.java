@@ -36,7 +36,7 @@ public class Drone {
     private Boolean heating = false;
 
     @NotNull
-    @Column(name = "capacity", nullable = false, precision = 10, scale = 2)
+    @Column(name = "capacity", nullable = false)
     private Double capacity;
 
     @NotNull
@@ -44,14 +44,14 @@ public class Drone {
     private Integer maxMoves;
 
     @NotNull
-    @Column(name = "cost_per_move", nullable = false, precision = 10, scale = 2)
+    @Column(name = "cost_per_move", nullable = false)
     private Double costPerMove;
 
     @NotNull
-    @Column(name = "cost_initial", nullable = false, precision = 10, scale = 2)
+    @Column(name = "cost_initial", nullable = false)
     private Double costInitial;
 
     @NotNull
-    @Column(name = "cost_final", nullable = false, precision = 10, scale = 2)
+    @Column(name = "cost_final", nullable = false)
     private Double costFinal;
 }
