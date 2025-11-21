@@ -2,7 +2,7 @@ package uk.ac.ed.acp.cw2.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
-import uk.ac.ed.acp.cw2.dto.IsInRegion;
+import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.dto.Region;
 
@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
 // Unit tests for IsInRegionService
-class IsInRegionServiceTest extends BaseServiceTest {
+class IsInRegionRequestServiceTest extends BaseServiceTest {
 
     // Test valid isInRegion service call where point is inside region
     @Test
@@ -24,7 +24,7 @@ class IsInRegionServiceTest extends BaseServiceTest {
         };
         var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegion.builder().lngLat(pos).region(region).build();
+        var req = IsInRegionRequest.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -45,7 +45,7 @@ class IsInRegionServiceTest extends BaseServiceTest {
         };
         var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegion.builder().lngLat(pos).region(region).build();
+        var req = IsInRegionRequest.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -67,7 +67,7 @@ class IsInRegionServiceTest extends BaseServiceTest {
         };
         var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegion.builder().lngLat(pos).region(region).build();
+        var req = IsInRegionRequest.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -88,7 +88,7 @@ class IsInRegionServiceTest extends BaseServiceTest {
         };
         var region = Region.builder().name("TestRegion").vertices(vertices).build();
 
-        var req = IsInRegion.builder().lngLat(pos).region(region).build();
+        var req = IsInRegionRequest.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 
@@ -103,7 +103,7 @@ class IsInRegionServiceTest extends BaseServiceTest {
         LngLat pos = LngLat.builder().build(); // invalid position
         var region = Region.builder().name("TestRegion").vertices(new LngLat[0]).build();
 
-        var req = IsInRegion.builder().lngLat(pos).region(region).build();
+        var req = IsInRegionRequest.builder().lngLat(pos).region(region).build();
 
         Boolean isInRegion = IsInRegionService.isInRegion(req, response, logger);
 

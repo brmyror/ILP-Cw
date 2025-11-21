@@ -6,12 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * DTO for IsInRegion request containing a position and a region.
+ * DTO for IsInRegionRequest request containing a position and a region.
  */
 @Getter
 @Setter
 @Builder
-public class IsInRegion {
+public class IsInRegionRequest {
     @JsonProperty("position")
     private LngLat lngLat;
 

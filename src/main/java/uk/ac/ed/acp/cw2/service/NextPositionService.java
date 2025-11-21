@@ -3,13 +3,13 @@ package uk.ac.ed.acp.cw2.service;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
-import uk.ac.ed.acp.cw2.dto.NextPosition;
+import uk.ac.ed.acp.cw2.dto.NextPositionRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import org.slf4j.Logger;
 
 @Service
 public class NextPositionService {
-    public static LngLat nextPosition(NextPosition req, HttpServletResponse response, Logger logger) {
+    public static LngLat nextPosition(NextPositionRequest req, HttpServletResponse response, Logger logger) {
         try {
             Boolean errorHandlerNextPosition = ErrorHandler.nextPositionRequest(req, logger);
             // Validate input, reject if: start, angle, lng, lat is NaN or out of bounds

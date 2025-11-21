@@ -3,19 +3,19 @@ package uk.ac.ed.acp.cw2.service;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import uk.ac.ed.acp.cw2.dto.LngLat;
-import uk.ac.ed.acp.cw2.dto.NextPosition;
+import uk.ac.ed.acp.cw2.dto.NextPositionRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
 // Unit tests for NextPositionService
-class NextPositionServiceTest extends BaseServiceTest {
+class NextPositionRequestServiceTest extends BaseServiceTest {
 
     // Test valid nextPosition service call
     @Test
     void validNextPositionRequestReturns200AndNewPosition() {
         var start = LngLat.builder().lng(-3.192473).lat(55.946233).build();
-        var req = NextPosition.builder().start(start).angle(90.0).build();
+        var req = NextPositionRequest.builder().start(start).angle(90.0).build();
 
         LngLat nextPosition = NextPositionService.nextPosition(req, response, logger);
 
@@ -29,7 +29,7 @@ class NextPositionServiceTest extends BaseServiceTest {
     @Test
     void invalidNextPositionRequestReturns400AndNull() {
         var start = LngLat.builder().build(); // invalid start position
-        var req = NextPosition.builder().start(start).angle(Double.NaN).build();
+        var req = NextPositionRequest.builder().start(start).angle(Double.NaN).build();
 
         LngLat newPosition = NextPositionService.nextPosition(req, response, logger);
 

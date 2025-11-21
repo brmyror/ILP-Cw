@@ -3,7 +3,7 @@ package uk.ac.ed.acp.cw2.service;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
-import uk.ac.ed.acp.cw2.dto.IsInRegion;
+import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.dto.Region;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import java.awt.*;
 
 @Service
 public class IsInRegionService {
-    public static Boolean isInRegion(IsInRegion req, HttpServletResponse response, Logger logger) {
+    public static Boolean isInRegion(IsInRegionRequest req, HttpServletResponse response, Logger logger) {
         try {
             Boolean errorHandlerIsInRegionRequest = ErrorHandler.isInRegionRequest(req, logger);
             // Validate input, reject if: req, pos, region, lng, lat is NaN or out of bounds

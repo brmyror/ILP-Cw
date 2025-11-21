@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.LoggerFactory;
-import uk.ac.ed.acp.cw2.dto.IsInRegion;
+import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.dto.Region;
 
@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Unit tests for ErrorHandler isInRegion request validation
-class ErrorHandlerIsInRegionTest {
+class ErrorHandlerIsInRegionRequestTest {
 
     // Test for null isInRegion request
     @ParameterizedTest
     @CsvSource({"true", "false"})
     void isInRegionNullTest(Boolean isNull) {
-        IsInRegion req = isNull ? null : IsInRegion.builder().build();
+        IsInRegionRequest req = isNull ? null : IsInRegionRequest.builder().build();
         assertTrue(ErrorHandler.isInRegionRequest(req, LoggerFactory.getLogger("test")));
     }
 
@@ -34,7 +34,7 @@ class ErrorHandlerIsInRegionTest {
                         LngLat.builder().lng(-1.0).lat(-1.0).build()
                 })
                 .build();
-        var req = IsInRegion.builder().lngLat(pos).region(region).build();
+        var req = IsInRegionRequest.builder().lngLat(pos).region(region).build();
         assertFalse(ErrorHandler.isInRegionRequest(req, LoggerFactory.getLogger("test")));
     }
 }

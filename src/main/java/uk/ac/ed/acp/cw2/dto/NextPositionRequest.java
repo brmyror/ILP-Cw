@@ -6,12 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * DTO for NextPosition request containing a start position and an angle.
+ * DTO for NextPositionRequest request containing a start position and an angle.
  */
 @Getter
 @Setter
 @Builder
-public class NextPosition {
+public class NextPositionRequest {
     @JsonProperty("start")
     private LngLat start;
 

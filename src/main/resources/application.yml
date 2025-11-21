@@ -47,4 +47,4 @@ server:
 
 ilp:
   service:
-    url: ${ILP_URL:https://ilp-rest-2025-bvh6e9hschfagrgy.ukwest-01.azurewebsites.net/}
+    url: ${ILP_ENDPOINT:https://ilp-rest-2025-bvh6e9hschfagrgy.ukwest-01.azurewebsites.net/}

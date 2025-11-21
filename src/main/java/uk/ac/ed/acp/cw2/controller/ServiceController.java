@@ -4,8 +4,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ed.acp.cw2.dto.*;
+import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.service.*;
 
 import java.net.URL;
@@ -19,6 +22,11 @@ public class ServiceController {
 
     @Value("${ilp.service.url}")
     public URL serviceUrl;
+
+    @Autowired
+    private DronesWithCoolingService dronesWithCoolingService;
+    @Autowired
+    private DroneDetailsService droneDetailsService;
 
 
     @GetMapping("/")
@@ -99,12 +107,12 @@ public class ServiceController {
      *   },
      *   "angle": 90
      * }
-     * @param req A NextPosition object containing a starting Position and an angle in degrees.
+     * @param req A NextPositionRequest object containing a starting Position and an angle in degrees.
      * @param response HttpServletResponse to set the status code.
      * @return A Position object representing the new position, or a 400 Bad Request status if the input is invalid.
      */
     @PostMapping("/nextPosition")
-    public LngLat nextPosition(@RequestBody NextPosition req, HttpServletResponse response) {
+    public LngLat nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
         return NextPositionService.nextPosition(req, response, logger);
     }
 
@@ -128,24 +136,34 @@ public class ServiceController {
      *     ]
      *   }
      * }
-     * @param req An IsInRegion object containing a Position and a Region.
+     * @param req An IsInRegionRequest object containing a Position and a Region.
      * @param response HttpServletResponse to set the status code.
      * @return A Boolean indicating if the position is inside the region, or a 400 Bad Request status if the input is invalid.
      */
     @PostMapping("/isInRegion")
-    public Boolean isInRegion(@RequestBody IsInRegion req, HttpServletResponse response) {
+    public Boolean isInRegion(@RequestBody IsInRegionRequest req, HttpServletResponse response) {
         return IsInRegionService.isInRegion(req, response, logger);
     }
 
     /**
+     * Endpoint to retrieve a list of drone IDs that have cooling capabilities based on their state.
+     * @param state The state of the drone's cooling capability to retrieve.
+     * @return A list of drone IDs, or an empty list if none are found.
+     */
     @GetMapping("/dronesWithCooling/{state}")
-    public DroneID[] dronesWithCooling(@PathVariable String state) {
-        return DronesWithCoolingService.dronesWithCooling(state, logger);
+    public String[] dronesWithCooling(@PathVariable String state) {
+        return dronesWithCoolingService.dronesWithCooling(state);
     }
 
+    /**
+     * Returns the Drone entity for the given id or throws 404 if not found.
+     *
+     * @param id drone id
+     * @return Drone entity
+     * @throws ResponseStatusException with 404 status when the id does not exist
+     */
     @GetMapping("/droneDetails/{id}")
     public Drone droneDetails(@PathVariable String id) {
-        return DroneDetailsService.droneDetails(id, logger);
+        return droneDetailsService.droneDetails(id);
     }
-    **/
 }

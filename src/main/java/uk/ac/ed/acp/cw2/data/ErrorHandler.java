@@ -64,12 +64,12 @@ public class ErrorHandler {
         } else return lngLatRequest(req.getLngLat2(), logger);
     }
 
-    // Error handler for NextPosition objects
-    public static Boolean nextPositionRequest(NextPosition req, Logger logger) {
+    // Error handler for NextPositionRequest objects
+    public static Boolean nextPositionRequest(NextPositionRequest req, Logger logger) {
         // Check if req is null
         if (req == null) {
             if (VERBOSE) {
-                logger.error("NextPosition itself null");
+                logger.error("NextPositionRequest itself null");
             } return true;
         }
 
@@ -113,12 +113,12 @@ public class ErrorHandler {
         } return false;
     }
 
-    // Error handler for IsInRegion objects
-    public static Boolean isInRegionRequest(IsInRegion req, Logger logger) {
+    // Error handler for IsInRegionRequest objects
+    public static Boolean isInRegionRequest(IsInRegionRequest req, Logger logger) {
         // Check if req is null
         if (req == null ) {
             if (VERBOSE) {
-                logger.error("IsInRegion itself null");
+                logger.error("IsInRegionRequest itself null");
             } return true;
         }
 
