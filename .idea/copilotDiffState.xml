@@ -12,6 +12,15 @@
             </PendingDiffInfo>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/src/main/java/uk/ac/ed/acp/cw2/mapper/RestrictedAreaMapper.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/src/main/java/uk/ac/ed/acp/cw2/mapper/RestrictedAreaMapper.java" />
+              <option name="originalContent" value="package uk.ac.ed.acp.cw2.mapper;&#10;&#10;import uk.ac.ed.acp.cw2.dto.RestrictedAreaDto;&#10;import uk.ac.ed.acp.cw2.entity.RestrictedArea;&#10;&#10;import java.util.Arrays;&#10;import java.util.List;&#10;import java.util.Objects;&#10;import java.util.stream.Collectors;&#10;&#10;public final class RestrictedAreaMapper {&#10;    private RestrictedAreaMapper() {}&#10;&#10;    public static RestrictedArea fromDto(RestrictedAreaDto dto) {&#10;        if (dto == null) return null;&#10;&#10;        return RestrictedArea.builder()&#10;                .name(dto.name())&#10;                .id(dto.id())&#10;                .limits(dto.limits())&#10;                .vertices(dto.vertices())&#10;                .build();&#10;    }&#10;&#10;    public static List&lt;RestrictedArea&gt; fromDtoList(RestrictedAreaDto[] dtos) {&#10;        return Arrays.stream(dtos)&#10;                .filter(Objects::nonNull)&#10;                .map(RestrictedAreaMapper::fromDto)&#10;                .collect(Collectors.toList());&#10;    }&#10;}" />
+              <option name="updatedContent" value="package uk.ac.ed.acp.cw2.mapper;&#10;&#10;import uk.ac.ed.acp.cw2.dto.RestrictedAreaDto;&#10;import uk.ac.ed.acp.cw2.entity.RestrictedArea;&#10;&#10;import java.util.Arrays;&#10;import java.util.List;&#10;import java.util.Objects;&#10;import java.util.stream.Collectors;&#10;&#10;public final class RestrictedAreaMapper {&#10;    private RestrictedAreaMapper() {}&#10;&#10;    public static RestrictedArea fromDto(RestrictedAreaDto dto) {&#10;        if (dto == null) return null;&#10;&#10;        return RestrictedArea.builder()&#10;                .name(dto.name())&#10;                .id(dto.id())&#10;                .limits(dto.limits())&#10;                .vertices(dto.vertices())&#10;                .build();&#10;    }&#10;&#10;    public static List&lt;RestrictedArea&gt; fromDtoList(RestrictedAreaDto[] dtos) {&#10;        return Arrays.stream(dtos)&#10;                .filter(Objects::nonNull)&#10;                .map(RestrictedAreaMapper::fromDto)&#10;                .collect(Collectors.toList());&#10;    }&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
