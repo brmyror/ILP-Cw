@@ -1,32 +1,21 @@
 package uk.ac.ed.acp.cw2.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import uk.ac.ed.acp.cw2.dto.LngLat;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "drone_service_points", schema = "ilp")
+@Builder
 public class DroneServicePoint {
-    @Id
-    @Column(name = "id", nullable = false)
+    @NotNull
     private Integer id;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @NotNull
     private String name;
 
-    @Column(name = "latitude", nullable = false)
-    private Double latitude;
-
-    @Column(name = "longitude", nullable = false)
-    private Double longitude;
-
-    @Column(name = "altitude", nullable = false)
-    private Integer altitude;
-
-
+    @NotNull
+    private LngLat location;
 }

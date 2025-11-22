@@ -1,16 +1,32 @@
 package uk.ac.ed.acp.cw2.mapper;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+
 import uk.ac.ed.acp.cw2.dto.DroneServicePointDto;
+import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.entity.DroneServicePoint;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
-public interface DroneServicePointMapper {
+public final class DroneServicePointMapper {
+    private DroneServicePointMapper() {}
 
-    @Mapping(target = "location", expression = "java(LngLatAlt.builder().lng(servicePoint.getLongitude()).lat(servicePoint.getLatitude()).alt(servicePoint.getAltitude()).build())")
-    DroneServicePointDto toDto(DroneServicePoint servicePoint);
+    public static DroneServicePoint fromDto(DroneServicePointDto dto) {
+        LngLat location = LngLat.builder()
+                .lng(dto.longitude())
+                .lat(dto.latitude())
+                .build();
 
-    List<DroneServicePointDto> toDtoList(List<DroneServicePoint> servicePoints);
+        return DroneServicePoint.builder()
+                .id(dto.id())
+                .name(dto.name())
+                .location(location)
+                .build();
+    }
+
+    public static List<DroneServicePoint> fromDtoList(DroneServicePointDto[] dtos) {
+        return Arrays.stream(dtos)
+                .map(DroneServicePointMapper::fromDto)
+                .collect(Collectors.toList());
+    }
 }

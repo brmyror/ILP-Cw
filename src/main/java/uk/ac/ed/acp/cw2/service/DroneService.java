@@ -1,45 +1,29 @@
 package uk.ac.ed.acp.cw2.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import uk.ac.ed.acp.cw2.dto.DroneDto;
-import uk.ac.ed.acp.cw2.dto.DroneServicePointDto;
-import uk.ac.ed.acp.cw2.mapper.DroneMapper;
-import uk.ac.ed.acp.cw2.mapper.DroneServicePointMapper;
-import uk.ac.ed.acp.cw2.repository.DroneRepository;
-import uk.ac.ed.acp.cw2.repository.DroneServicePointAvailabilityRepository;
-import uk.ac.ed.acp.cw2.repository.DroneServicePointRepository;
+import org.springframework.web.server.ResponseStatusException;
+import uk.ac.ed.acp.cw2.entity.Drone;
 
 import java.util.List;
+import java.util.Objects;
 
-@Slf4j
-@RequiredArgsConstructor
 @Service
 public class DroneService {
-    private final DroneRepository droneRepository;
-    private final DroneServicePointRepository servicePointRepository;
-    private final DroneServicePointAvailabilityRepository availabilityRepository;
 
-    private final DroneServicePointMapper servicePointMapper;
-    private final JdbcTemplate jdbc;
-    private final PlatformTransactionManager transactionManager;
-
-    public List<DroneServicePointDto> getServicePoints() {
-        var servicePoints = servicePointRepository.findAll();
-        return servicePointMapper.toDtoList(servicePoints);
-    }
-
-    public List<DroneDto> getDrones() {
-        var drones = droneRepository.findAll();
+    public String[] dronesWithCooling(Boolean state, List<Drone> drones) {
+        // Filter by cooling capability and return matching IDs
         return drones.stream()
-                .map(DroneMapper::toDto)
-                .toList();
+                .filter(d -> Objects.equals(d.getCooling(), state))
+                .map(Drone::getId)
+                .toArray(String[]::new);
     }
 
-//    public List<DroneDto> queryDrones(DroneQueryRequest queryRequest) {
-//        Specification<Drone> spec = where(null);
-//    }
+    public Drone droneDetails(String id, java.util.List<Drone> drones) {
+        // Find a drone by id, then map to existing Drone shape
+        return drones.stream()
+                .filter(d -> id.equals(d.getId()))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Drone not found"));
+    }
 }

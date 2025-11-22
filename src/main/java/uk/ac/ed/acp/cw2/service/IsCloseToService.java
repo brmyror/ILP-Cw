@@ -1,11 +1,11 @@
 package uk.ac.ed.acp.cw2.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.Distance;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
 import uk.ac.ed.acp.cw2.dto.PositionPair;
-import org.slf4j.Logger;
 
 @Service
 public class IsCloseToService {

@@ -1,13 +1,12 @@
 package uk.ac.ed.acp.cw2.service;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import uk.ac.ed.acp.cw2.data.ErrorHandler;
 import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.dto.Region;
-import org.slf4j.Logger;
-
 
 import java.awt.*;
 

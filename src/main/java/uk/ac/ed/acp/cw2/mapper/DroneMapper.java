@@ -1,38 +1,35 @@
 package uk.ac.ed.acp.cw2.mapper;
 
-import jakarta.validation.constraints.NotNull;
 import uk.ac.ed.acp.cw2.dto.DroneDto;
 import uk.ac.ed.acp.cw2.entity.Drone;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public final class DroneMapper {
     private DroneMapper() {}
 
-    public static DroneDto toDto(Drone drone) {
-        if (drone == null) {return null;}
-        return new DroneDto(
-                drone.getName(),
-                drone.getId(),
-                new DroneDto.Capabilities(
-                        bool(drone.getCooling()),
-                        bool(drone.getHeating()),
-                        toDouble(drone.getCapacity()),
-                        drone.getMaxMoves(),
-                        toDouble(drone.getCostPerMove()),
-                        toDouble(drone.getCostInitial()),
-                        toDouble(drone.getCostFinal())
-                )
-        );
+    public static Drone fromDto(DroneDto dto) {
+        DroneDto.Capabilities cap = dto.capability();
+        return Drone.builder()
+                .id(dto.id())
+                .name(dto.name())
+                .cooling(cap.cooling())
+                .heating(cap.heating())
+                .capacity(cap.capacity())
+                .maxMoves(cap.maxMoves())
+                .costPerMove(cap.costPerMove())
+                .costInitial(cap.costInitial())
+                .costFinal(cap.costFinal())
+                .build();
     }
 
-//    public static List<DroneDto> toDtoList(List<Drone> drones) {
-//    
-//    }
-
-    private static Boolean bool(@NotNull Boolean cooling) {
-        return cooling;
-    }
-    private static Double toDouble(@NotNull Double capacity) {
-        return capacity;
+    public static List<Drone> fromDtoList(DroneDto[] dtos) {
+        return Arrays.stream(dtos)
+                .map(DroneMapper::fromDto)
+                .collect(Collectors.toList());
     }
 }

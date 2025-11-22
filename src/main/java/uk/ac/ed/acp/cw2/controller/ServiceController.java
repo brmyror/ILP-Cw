@@ -3,15 +3,19 @@ package uk.ac.ed.acp.cw2.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import uk.ac.ed.acp.cw2.dto.*;
+import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
+import uk.ac.ed.acp.cw2.dto.LngLat;
+import uk.ac.ed.acp.cw2.dto.NextPositionRequest;
+import uk.ac.ed.acp.cw2.dto.PositionPair;
 import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.service.*;
 
 import java.net.URL;
+import java.util.List;
 
 
 @RestController()
@@ -23,10 +27,15 @@ public class ServiceController {
     @Value("${ilp.service.url}")
     public URL serviceUrl;
 
+    private final ILPRestController ilpRestController;
+    private final DroneService droneService;
+
     @Autowired
-    private DronesWithCoolingService dronesWithCoolingService;
-    @Autowired
-    private DroneDetailsService droneDetailsService;
+    public ServiceController(ILPRestController ilpRestController,
+                             DroneService droneService) {
+        this.ilpRestController = ilpRestController;
+        this.droneService = droneService;
+    }
 
 
     @GetMapping("/")
@@ -151,8 +160,9 @@ public class ServiceController {
      * @return A list of drone IDs, or an empty list if none are found.
      */
     @GetMapping("/dronesWithCooling/{state}")
-    public String[] dronesWithCooling(@PathVariable String state) {
-        return dronesWithCoolingService.dronesWithCooling(state);
+    public String[] dronesWithCooling(@PathVariable Boolean state) {
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        return droneService.dronesWithCooling(state, drones);
     }
 
     /**
@@ -164,6 +174,7 @@ public class ServiceController {
      */
     @GetMapping("/droneDetails/{id}")
     public Drone droneDetails(@PathVariable String id) {
-        return droneDetailsService.droneDetails(id);
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        return droneService.droneDetails(id, drones);
     }
 }
