@@ -7,11 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
-import uk.ac.ed.acp.cw2.dto.LngLat;
-import uk.ac.ed.acp.cw2.dto.NextPositionRequest;
-import uk.ac.ed.acp.cw2.dto.PositionPair;
+import uk.ac.ed.acp.cw2.dto.*;
 import uk.ac.ed.acp.cw2.entity.Drone;
+import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
 import uk.ac.ed.acp.cw2.service.*;
 
 import java.net.URL;
@@ -166,7 +164,7 @@ public class ServiceController {
     }
 
     /**
-     * Returns the Drone entity for the given id or throws 404 if not found.
+     * Endpoint to return the Drone entity for the given id or throws 404 if not found.
      *
      * @param id drone id
      * @return Drone entity
@@ -176,5 +174,17 @@ public class ServiceController {
     public Drone droneDetails(@PathVariable String id) {
         List<Drone> drones = ilpRestController.fetchDronesFromIlp();
         return droneService.droneDetails(id, drones);
+    }
+
+    /**
+     * Endpoint to return an array of drone IDs that are able to fulfill the given array of MedDispatchRec.
+     * @param req array of MedDispatchRecs
+     * @return array of drone IDs, or an empty list if none are found.
+     */
+    @PostMapping("/queryAvailableDrones")
+    public String[] queryAvailableDrones(@RequestBody MedDispatchRecRequest[] req) {
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
+        return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
     }
 }
