@@ -51,24 +51,4 @@ public class MedDispatchRecRequest {
 
     @JsonProperty("delivery")
     private LngLat delivery;
-
-    // TODO figure out intake of requests split by AND
 }
-//{
-//  "id": 123,
-//  "date": "2025-12-22",
-//  "time": "14:30",
-//  "requirements": {
-//    "capacity": 0.75,
-//    "cooling": false,
-//    "heating": true,
-//    "maxCost": 13.5
-//  },
-//
-//  "delivery": {
-//    	"lng": -3.00
-//    	"lat": 55.121
-//  }
-//}
-//AND
-//...

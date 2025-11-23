@@ -60,13 +60,14 @@ public class DroneService {
             boolean requiresHeating = r.getRequirements().isHeating();
             LocalDate date = r.getDate();
             LocalTime time = r.getTime();
-            // TODO: use a lower-bound or estimated cost such as (distance(servicePoint, delivery)/step) × costPerMove + costInitial + costFinal, divided by the number of dispatches;
+            // Use a conservative lower-bound estimate for cost when maxCost is provided:
+            // minCostEstimate = costInitial + costFinal + costPerMove * distance(servicePoint, delivery)/step
 
             availableDrones = availableDrones.stream()
                     .filter(d -> {
                         if (date == null && time == null) return true; // no constraint
 
-                        List<DroneForServicePoint.Availability> avails = availabilityMap.get(d.getId());
+                        List<DroneForServicePoint.Availability> avails = availabilityMap.getOrDefault(d.getId(), Collections.emptyList());
 
                         // If date provided, check day-of-week match; if time provided, also check the time window
                         if (date != null) {
@@ -76,6 +77,22 @@ public class DroneService {
                         } else { // date == null but time != null: accept any availability window that contains the time
                             return avails.stream().anyMatch(a -> (!a.getFrom().isAfter(time) && !a.getUntil().isBefore(time)));
                         }
+                    })
+                    // check cost BEFORE consuming capacity so we don't mutate drones that will be filtered out
+                    .filter(d -> {
+                        Double maxCost = r.getRequirements().getMaxCost();
+                        if (maxCost == null) return true;
+
+                        double costPerMove = d.getCostPerMove();
+                        double costInitial = d.getCostInitial();
+                        double costFinal = d.getCostFinal();
+                        int maxMoves = d.getMaxMoves();
+
+                        // if drone cannot make any move, it can't serve a delivery that requires movement
+                        if (maxMoves < 1) return false;
+
+                        double minEstimate = costInitial + costFinal + costPerMove;
+                        return Double.compare(minEstimate, maxCost) <= 0;
                     })
                     .filter(d -> {
                         Double cap = d.getCapacity();
@@ -246,7 +263,7 @@ public class DroneService {
                         // done with this (and only) delivery
                     } else {
                         // multiple deliveries: last delivery is outbound then return concatenated into one segment
-                        start = deliveries.size() == 1 ? originSp.getLocation() : deliveries.get(i - 1).getDelivery();
+                        start = deliveries.get(i - 1).getDelivery();
                         end = curr.getDelivery();
                         List<LngLat> firstLeg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
                         List<LngLat> returnLeg = FlightPathAlgorithm.findPath(end, originSp.getLocation(), restrictedAreas);
