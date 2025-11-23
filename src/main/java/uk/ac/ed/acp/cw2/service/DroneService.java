@@ -4,10 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ed.acp.cw2.data.DynamicQueries;
+import uk.ac.ed.acp.cw2.dto.CalculatedDeliveryPathRequest;
 import uk.ac.ed.acp.cw2.dto.MedDispatchRecRequest;
 import uk.ac.ed.acp.cw2.dto.QueryRequest;
 import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
+import uk.ac.ed.acp.cw2.entity.DroneServicePoint;
+import uk.ac.ed.acp.cw2.entity.RestrictedArea;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -33,7 +36,8 @@ public class DroneService {
     }
 
     //    "maxCost": 13.5
-    public String[] queryAvailableDrones(List<MedDispatchRecRequest> req, List<Drone> drones, List<DroneForServicePoint> dronesForServicePoints) {
+    public String[] queryAvailableDrones(List<MedDispatchRecRequest> req, List<Drone> drones,
+                                         List<DroneForServicePoint> dronesForServicePoints) {
         List<Drone> availableDrones = new ArrayList<>(drones);
 
         if (req == null) {
@@ -133,5 +137,13 @@ public class DroneService {
             }
         }
         return droneIDs.toArray(new String[0]);
+    }
+
+    public CalculatedDeliveryPathRequest calcDeliveryPath(List<MedDispatchRecRequest> req, List<Drone> drones,
+                                                          List<DroneServicePoint> servicePoints,
+                                                          List<DroneForServicePoint> dronesForServicePoints,
+                                                          List<RestrictedArea> restrictedAreas, String[] droneIDs) {
+
+        return null;
     }
 }

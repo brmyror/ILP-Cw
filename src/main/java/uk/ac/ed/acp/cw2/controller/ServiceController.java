@@ -10,6 +10,8 @@ import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ed.acp.cw2.dto.*;
 import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
+import uk.ac.ed.acp.cw2.entity.DroneServicePoint;
+import uk.ac.ed.acp.cw2.entity.RestrictedArea;
 import uk.ac.ed.acp.cw2.service.*;
 
 import java.net.URL;
@@ -209,5 +211,15 @@ public class ServiceController {
         List<Drone> drones = ilpRestController.fetchDronesFromIlp();
         List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
         return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
+    }
+
+    @PostMapping("calcDeliveryPath")
+    public CalculatedDeliveryPathRequest calcDeliveryPath(@RequestBody List<MedDispatchRecRequest> req) {
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        List<DroneServicePoint> servicePoints = ilpRestController.fetchServicePointsFromIlp();
+        List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
+        List<RestrictedArea> restrictedAreas = ilpRestController.fetchRestrictedAreasFromIlp();
+        String[] droneIDs = droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
+        return droneService.calcDeliveryPath(req, drones, servicePoints, dronesForServicePoints, restrictedAreas, droneIDs);
     }
 }
