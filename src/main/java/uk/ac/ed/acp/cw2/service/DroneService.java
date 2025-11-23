@@ -12,6 +12,7 @@ import uk.ac.ed.acp.cw2.dto.QueryRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.entity.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -40,7 +41,6 @@ public class DroneService {
                                          List<DroneForServicePoint> dronesForServicePoints) {
         List<Drone> availableDrones = new ArrayList<>(drones);
 
-        // TODO should return []
         if (req == null) {
             return availableDrones.stream().map(Drone::getId).toArray(String[]::new);
         }
@@ -60,8 +60,7 @@ public class DroneService {
             boolean requiresHeating = r.getRequirements().isHeating();
             LocalDate date = r.getDate();
             LocalTime time = r.getTime();
-            // TODO: Only perform attribute-based filtering and use a lower-bound or estimated cost such as \
-            //(distance(servicePoint, delivery)/step) × costPerMove + costInitial + costFinal, divided by the number of dispatches;
+            // TODO: use a lower-bound or estimated cost such as (distance(servicePoint, delivery)/step) × costPerMove + costInitial + costFinal, divided by the number of dispatches;
 
             availableDrones = availableDrones.stream()
                     .filter(d -> {
@@ -71,7 +70,7 @@ public class DroneService {
 
                         // If date provided, check day-of-week match; if time provided, also check the time window
                         if (date != null) {
-                            java.time.DayOfWeek dow = date.getDayOfWeek();
+                            DayOfWeek dow = date.getDayOfWeek();
                             return avails.stream().anyMatch(a -> a.getDayOfWeek() == dow &&
                                     (time == null || (!a.getFrom().isAfter(time) && !a.getUntil().isBefore(time))));
                         } else { // date == null but time != null: accept any availability window that contains the time
@@ -151,7 +150,6 @@ public class DroneService {
         Map<String, Drone> droneById = new HashMap<>();
         for (Drone d : drones) droneById.put(d.getId(), d);
 
-        // TODO implement better distribution of requests to drones
         // Evenly distribute requests to drone IDs
         Map<String, List<MedDispatchRecRequest>> assignments = new LinkedHashMap<>();
         for (String id : droneIDs) assignments.put(id, new ArrayList<>());
@@ -191,19 +189,92 @@ public class DroneService {
                 MedDispatchRecRequest curr = deliveries.get(i);
                 LngLat start;
                 LngLat end;
-                List<LngLat> seg;
+                List<LngLat> seg = List.of();
 
                 if (i == deliveries.size() - 1) {
-                    // TODO in case where there is only 1 delivery to be made the return flight should be a different element with a null deliveryID
                     // last delivery: start at the previous delivery (or origin if only one), go to last delivery then return to origin
-                    start = deliveries.size() == 1 ? originSp.getLocation() : deliveries.get(i - 1).getDelivery();
-                    end = curr.getDelivery();
-                    List<LngLat> firstLeg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
-                    List<LngLat> returnLeg = FlightPathAlgorithm.findPath(end, originSp.getLocation(), restrictedAreas);
-                    // concatenate; since both legs include end, concatenation yields duplicate indicating hover
-                    seg = new ArrayList<>(firstLeg);
-                    if (!returnLeg.isEmpty()) {
-                        seg.addAll(returnLeg);
+                    if (deliveries.size() == 1) {
+                        // single delivery: split outbound and return into two Deliveries
+                        start = originSp.getLocation();
+                        end = curr.getDelivery();
+                        List<LngLat> firstLeg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
+                        // hover at end -> duplicate last point on outbound leg
+                        if (!firstLeg.isEmpty()) {
+                            LngLat last = firstLeg.getLast();
+                            firstLeg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());
+                        }
+
+                        List<LngLat> returnLeg = FlightPathAlgorithm.findPath(end, originSp.getLocation(), restrictedAreas);
+
+                        // compute moves and cost for outbound leg
+                        int movesOut = Math.max(0, firstLeg.size() - 1);
+                        totalMoves += movesOut;
+                        Drone assignedDroneOut = droneById.get(droneId);
+                        double costOut = 0.0;
+                        if (assignedDroneOut != null) {
+                            double costPerMove = assignedDroneOut.getCostPerMove();
+                            double costInitial = assignedDroneOut.getCostInitial();
+                            double costFinal = assignedDroneOut.getCostFinal();
+                            costOut = costInitial + costFinal + costPerMove * movesOut;
+                        }
+                        totalCost += costOut;
+
+                        Deliveries delOut = Deliveries.builder()
+                                .deliveryId(curr.getId())
+                                .flightPath(firstLeg.toArray(new LngLat[0]))
+                                .build();
+                        droneDeliveries.add(delOut);
+
+                        // compute moves and cost for return leg (as a separate delivery with null id)
+                        int movesRet = Math.max(0, returnLeg.size() - 1);
+                        totalMoves += movesRet;
+                        double costRet = 0.0;
+                        if (assignedDroneOut != null) {
+                            double costPerMove = assignedDroneOut.getCostPerMove();
+                            double costInitial = assignedDroneOut.getCostInitial();
+                            double costFinal = assignedDroneOut.getCostFinal();
+                            costRet = costInitial + costFinal + costPerMove * movesRet;
+                        }
+                        totalCost += costRet;
+
+                        Deliveries delRet = Deliveries.builder()
+                                .deliveryId(null)
+                                .flightPath(returnLeg.toArray(new LngLat[0]))
+                                .build();
+                        droneDeliveries.add(delRet);
+
+                        // done with this (and only) delivery
+                    } else {
+                        // multiple deliveries: last delivery is outbound then return concatenated into one segment
+                        start = deliveries.size() == 1 ? originSp.getLocation() : deliveries.get(i - 1).getDelivery();
+                        end = curr.getDelivery();
+                        List<LngLat> firstLeg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
+                        List<LngLat> returnLeg = FlightPathAlgorithm.findPath(end, originSp.getLocation(), restrictedAreas);
+                        // concatenate; since both legs include end, concatenation yields duplicate indicating hover
+                        seg = new ArrayList<>(firstLeg);
+                        if (!returnLeg.isEmpty()) {
+                            seg.addAll(returnLeg);
+                        }
+
+                        // compute moves and cost for this delivery (concatenated round-trip)
+                        int moves = Math.max(0, seg.size() - 1);
+                        totalMoves += moves;
+
+                        Drone assignedDrone = droneById.get(droneId);
+                        double cost = 0.0;
+                        if (assignedDrone != null) {
+                            double costPerMove = assignedDrone.getCostPerMove();
+                            double costInitial = assignedDrone.getCostInitial();
+                            double costFinal = assignedDrone.getCostFinal();
+                            cost = costInitial + costFinal + costPerMove * moves;
+                        }
+                        totalCost += cost;
+
+                        Deliveries del = Deliveries.builder()
+                                .deliveryId(curr.getId())
+                                .flightPath(seg.toArray(new LngLat[0]))
+                                .build();
+                        droneDeliveries.add(del);
                     }
                 } else if (i == 0) {
                     // start at service point, go to the first delivery
