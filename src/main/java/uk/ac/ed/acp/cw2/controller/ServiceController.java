@@ -220,6 +220,6 @@ public class ServiceController {
         List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
         List<RestrictedArea> restrictedAreas = ilpRestController.fetchRestrictedAreasFromIlp();
         String[] droneIDs = droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
-        return droneService.calcDeliveryPath(req, drones, servicePoints, dronesForServicePoints, restrictedAreas, droneIDs);
+        return droneService.calcDeliveryPath(req, drones, servicePoints, restrictedAreas, droneIDs);
     }
 }
