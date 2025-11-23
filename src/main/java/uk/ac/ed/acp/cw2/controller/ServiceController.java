@@ -177,18 +177,6 @@ public class ServiceController {
     }
 
     /**
-     * Endpoint to return an array of drone IDs that are able to fulfill the given array of MedDispatchRec.
-     * @param req array of MedDispatchRecs
-     * @return array of drone IDs, or an empty list if none are found.
-     */
-    @PostMapping("/queryAvailableDrones")
-    public String[] queryAvailableDrones(@RequestBody MedDispatchRecRequest[] req) {
-        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
-        List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
-        return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
-    }
-
-    /**
      * Endpoint to return an array of drone IDs that are able to fulfill the given attribute name and value.
      * @param name Attribute name to query on
      * @param value Attribute value to query on
@@ -209,5 +197,17 @@ public class ServiceController {
     public String[] query(@RequestBody List<QueryRequest> req ) {
         List<Drone> drones = ilpRestController.fetchDronesFromIlp();
         return droneService.query(req, drones);
+    }
+
+    /**
+     * Endpoint to return an array of drone IDs that are able to fulfill the given array of MedDispatchRec.
+     * @param req array of MedDispatchRecs
+     * @return array of drone IDs, or an empty list if none are found.
+     */
+    @PostMapping("/queryAvailableDrones")
+    public String[] queryAvailableDrones(@RequestBody List<MedDispatchRecRequest> req) {
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
+        return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
     }
 }

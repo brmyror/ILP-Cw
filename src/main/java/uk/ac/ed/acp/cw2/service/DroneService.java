@@ -33,7 +33,7 @@ public class DroneService {
     }
 
     //    "maxCost": 13.5
-    public String[] queryAvailableDrones(MedDispatchRecRequest[] req, List<Drone> drones, List<DroneForServicePoint> dronesForServicePoints) {
+    public String[] queryAvailableDrones(List<MedDispatchRecRequest> req, List<Drone> drones, List<DroneForServicePoint> dronesForServicePoints) {
         List<Drone> availableDrones = new ArrayList<>(drones);
 
         if (req == null) {
