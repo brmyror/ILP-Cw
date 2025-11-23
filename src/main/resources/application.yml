@@ -26,7 +26,6 @@ server:
   port: 8080
 
 
-
 ilp:
   service:
     url: ${ILP_ENDPOINT:https://ilp-rest-2025-bvh6e9hschfagrgy.ukwest-01.azurewebsites.net/}

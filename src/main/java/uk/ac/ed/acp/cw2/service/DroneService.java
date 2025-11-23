@@ -40,6 +40,7 @@ public class DroneService {
                                          List<DroneForServicePoint> dronesForServicePoints) {
         List<Drone> availableDrones = new ArrayList<>(drones);
 
+        // TODO should return []
         if (req == null) {
             return availableDrones.stream().map(Drone::getId).toArray(String[]::new);
         }
@@ -193,6 +194,7 @@ public class DroneService {
                 List<LngLat> seg;
 
                 if (i == deliveries.size() - 1) {
+                    // TODO in case where there is only 1 delivery to be made the return flight should be a different element with a null deliveryID
                     // last delivery: start at the previous delivery (or origin if only one), go to last delivery then return to origin
                     start = deliveries.size() == 1 ? originSp.getLocation() : deliveries.get(i - 1).getDelivery();
                     end = curr.getDelivery();
@@ -246,10 +248,9 @@ public class DroneService {
                 droneDeliveries.add(del);
             }
 
-            // TODO check if drone id can be parsed as an integer
             // build DronePaths for this drone
             DronePaths dp = DronePaths.builder()
-                    .droneId(Integer.valueOf(droneId.replaceAll("\\D", "")))
+                    .droneId(Integer.valueOf(droneId))
                     .deliveries(droneDeliveries.toArray(new Deliveries[0]))
                     .build();
             dronePaths.add(dp);
