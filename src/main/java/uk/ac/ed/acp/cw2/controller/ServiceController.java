@@ -187,4 +187,10 @@ public class ServiceController {
         List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
         return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
     }
+
+    @GetMapping("/queryAsPath/{attribute-name}/{attribute-value}")
+    public String[] queryAsPath(@PathVariable("attribute-name") String name, @PathVariable("attribute-value") String value ) {
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        return droneService.queryAsPath(name, value, drones);
+    }
 }

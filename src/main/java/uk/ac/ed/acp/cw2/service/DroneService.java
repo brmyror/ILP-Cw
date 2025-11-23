@@ -3,10 +3,14 @@ package uk.ac.ed.acp.cw2.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import uk.ac.ed.acp.cw2.data.DynamicQueries;
 import uk.ac.ed.acp.cw2.dto.MedDispatchRecRequest;
 import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -35,24 +39,7 @@ public class DroneService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Drone not found"));
     }
 
-    //{
-    //  "id": 123,
-    //  "date": "2025-12-22",
-    //  "time": "14:30",
-    //  "requirements": {
-    //    "capacity": 0.75,
-    //    "cooling": false,
-    //    "heating": true,
     //    "maxCost": 13.5
-    //  },
-    //
-    //  "delivery": {
-    //    	"lng": -3.00
-    //    	"lat": 55.121
-    //  }
-    //}
-    //AND
-    //...
     public String[] queryAvailableDrones(MedDispatchRecRequest[] req, List<Drone> drones, List<DroneForServicePoint> dronesForServicePoints) {
         List<Drone> availableDrones = drones;
 
@@ -115,4 +102,19 @@ public class DroneService {
                 .toArray(String[]::new);
     }
 
+    /**
+     * Return Drone IDs whose top-level attribute equals the provided string value.
+     * Only single-level attributes (no dot paths) are supported and attribute types are
+     * String, Boolean, or Number (Integer/Double). All inputs are assumed valid per project constraints.
+     */
+    public String[] queryAsPath(String attributeName, String value, List<Drone> drones) {
+        List<String> matched = new ArrayList<>();
+        for (Drone d : drones) {
+            Object attrVal = DynamicQueries.readProperty(d, attributeName);
+            if (DynamicQueries.attributeEquals(attrVal, value)) {
+                matched.add(d.getId());
+            }
+        }
+        return matched.toArray(new String[0]);
+    }
 }
