@@ -5,20 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.ed.acp.cw2.data.DynamicQueries;
 import uk.ac.ed.acp.cw2.dto.MedDispatchRecRequest;
+import uk.ac.ed.acp.cw2.dto.QueryRequest;
 import uk.ac.ed.acp.cw2.entity.Drone;
 import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class DroneService {
@@ -41,7 +34,7 @@ public class DroneService {
 
     //    "maxCost": 13.5
     public String[] queryAvailableDrones(MedDispatchRecRequest[] req, List<Drone> drones, List<DroneForServicePoint> dronesForServicePoints) {
-        List<Drone> availableDrones = drones;
+        List<Drone> availableDrones = new ArrayList<>(drones);
 
         if (req == null) {
             return availableDrones.stream().map(Drone::getId).toArray(String[]::new);
@@ -81,7 +74,6 @@ public class DroneService {
                         }
                     })
                     .filter(d -> {
-                        // robust capacity handling: guard nulls, compare safely and clamp small fp negatives
                         Double cap = d.getCapacity();
 
                         if (Double.compare(cap, requiredCapacity) >= 0) {
@@ -102,11 +94,6 @@ public class DroneService {
                 .toArray(String[]::new);
     }
 
-    /**
-     * Return Drone IDs whose top-level attribute equals the provided string value.
-     * Only single-level attributes (no dot paths) are supported and attribute types are
-     * String, Boolean, or Number (Integer/Double). All inputs are assumed valid per project constraints.
-     */
     public String[] queryAsPath(String attributeName, String value, List<Drone> drones) {
         List<String> matched = new ArrayList<>();
         for (Drone d : drones) {
@@ -116,5 +103,35 @@ public class DroneService {
             }
         }
         return matched.toArray(new String[0]);
+    }
+
+    public String[] query(List<QueryRequest> query, List<Drone> drones) {
+        List<Drone> availableDrones = new ArrayList<>(drones);
+        List<String> droneIDs = new ArrayList<>();
+        for (QueryRequest q : query) {
+            Iterator<Drone> iterator = availableDrones.iterator();
+            while (iterator.hasNext()) {
+                Drone d = iterator.next();
+                Object attrVal = DynamicQueries.readProperty(d, q.getAttribute());
+                boolean match = false;
+                if (Objects.equals(q.getOperator(), "=")) {
+                    match = DynamicQueries.attributeEquals(attrVal, q.getValue());
+                }
+                 else if (Objects.equals(q.getOperator(), "!=")) {
+                    match = !DynamicQueries.attributeEquals(attrVal, q.getValue());
+                }
+                 else if (Objects.equals(q.getOperator(), ">")) {
+                    match = DynamicQueries.attributeGreaterThan(attrVal, q.getValue());
+                }
+                 else if (Objects.equals(q.getOperator(), "<")) {
+                    match = DynamicQueries.attributeLessThan(attrVal, q.getValue());
+                }
+                 if (match) {
+                    droneIDs.add(d.getId());
+                    iterator.remove();
+                 }
+            }
+        }
+        return droneIDs.toArray(new String[0]);
     }
 }

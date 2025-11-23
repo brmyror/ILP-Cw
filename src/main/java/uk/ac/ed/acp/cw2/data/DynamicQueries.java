@@ -39,4 +39,22 @@ public class DynamicQueries {
 
         return false;
     }
+
+    public static boolean attributeLessThan(Object attrVal, String stringValue) {
+        if (attrVal instanceof Number) {
+            BigDecimal a = new BigDecimal(attrVal.toString());
+            BigDecimal b = new BigDecimal(stringValue);
+            return a.compareTo(b) < 0;
+        }
+        return false;
+    }
+
+    public static boolean attributeGreaterThan(Object attrVal, String stringValue) {
+        if (attrVal instanceof Number) {
+            BigDecimal a = new BigDecimal(attrVal.toString());
+            BigDecimal b = new BigDecimal(stringValue);
+            return a.compareTo(b) > 0;
+        }
+        return false;
+    }
 }

@@ -188,9 +188,26 @@ public class ServiceController {
         return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
     }
 
+    /**
+     * Endpoint to return an array of drone IDs that are able to fulfill the given attribute name and value.
+     * @param name Attribute name to query on
+     * @param value Attribute value to query on
+     * @return Array of drone IDs, or an empty list if none are found.
+     */
     @GetMapping("/queryAsPath/{attribute-name}/{attribute-value}")
     public String[] queryAsPath(@PathVariable("attribute-name") String name, @PathVariable("attribute-value") String value ) {
         List<Drone> drones = ilpRestController.fetchDronesFromIlp();
         return droneService.queryAsPath(name, value, drones);
+    }
+
+    /**
+     * Endpoint to return an array of drone IDs that are able to fulfill the given QueryRequest array.
+     * @param req Array of QueryRequest objects
+     * @return Array of drone IDs, or an empty list if none are found.
+     */
+    @PostMapping("/query")
+    public String[] query(@RequestBody List<QueryRequest> req ) {
+        List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+        return droneService.query(req, drones);
     }
 }
