@@ -29,3 +29,9 @@ server:
 ilp:
   service:
     url: ${ILP_ENDPOINT:https://ilp-rest-2025-bvh6e9hschfagrgy.ukwest-01.azurewebsites.net/}
+
+logging:
+  level:
+    root: WARN
+    org.springframework: WARN
+    uk.ac.ed.acp.cw2: WARN

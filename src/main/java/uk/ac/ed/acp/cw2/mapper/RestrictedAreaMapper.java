@@ -11,12 +11,15 @@ public final class RestrictedAreaMapper {
     private RestrictedAreaMapper() {}
 
     public static RestrictedArea fromDto(RestrictedAreaDto dto) {
+
         RestrictedArea.limits limits = mapLimits(dto.limits());
+        RestrictedArea.vertices[] vertices = mapVerticesArray(dto.vertices());
+
         return RestrictedArea.builder()
                 .name(dto.name())
                 .id(dto.id())
                 .limits(limits)
-                .vertices(dto.vertices())
+                .vertices(vertices)
                 .build();
     }
 
@@ -31,5 +34,20 @@ public final class RestrictedAreaMapper {
                 .lower(dto.lower())
                 .upper(dto.upper())
                 .build();
+    }
+
+    private static RestrictedArea.vertices mapVertex(RestrictedAreaDto.Vertices dto) {
+        return RestrictedArea.vertices.builder()
+                .lng(dto.lng())
+                .lat(dto.lat())
+                .build();
+    }
+
+    private static RestrictedArea.vertices[] mapVerticesArray(RestrictedAreaDto.Vertices[] dtos) {
+        RestrictedArea.vertices[] arr = new RestrictedArea.vertices[dtos.length];
+        for (int i = 0; i < dtos.length; i++) {
+            arr[i] = mapVertex(dtos[i]);
+        }
+        return arr;
     }
 }

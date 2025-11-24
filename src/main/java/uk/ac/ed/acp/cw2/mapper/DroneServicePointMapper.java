@@ -13,8 +13,8 @@ public final class DroneServicePointMapper {
 
     public static DroneServicePoint fromDto(DroneServicePointDto dto) {
         LngLat location = LngLat.builder()
-                .lng(dto.longitude())
-                .lat(dto.latitude())
+                .lng(dto.location().lng())
+                .lat(dto.location().lat())
                 .build();
 
         return DroneServicePoint.builder()

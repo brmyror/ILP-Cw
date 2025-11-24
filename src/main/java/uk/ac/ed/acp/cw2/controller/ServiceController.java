@@ -13,6 +13,7 @@ import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
 import uk.ac.ed.acp.cw2.entity.DroneServicePoint;
 import uk.ac.ed.acp.cw2.entity.RestrictedArea;
 import uk.ac.ed.acp.cw2.service.*;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.net.URL;
 import java.util.List;
@@ -213,6 +214,11 @@ public class ServiceController {
         return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
     }
 
+    /**
+     * Endpoint to calculate the delivery paths for the given array of MedDispatchRec.
+     * @param req array of MedDispatchRecs, each containing a list of requirements.
+     * @return CalculatedDeliveryPathRequest object containing the delivery paths and total cost.
+     */
     @PostMapping("calcDeliveryPath")
     public CalculatedDeliveryPathRequest calcDeliveryPath(@RequestBody List<MedDispatchRecRequest> req) {
         List<Drone> drones = ilpRestController.fetchDronesFromIlp();
@@ -220,6 +226,25 @@ public class ServiceController {
         List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
         List<RestrictedArea> restrictedAreas = ilpRestController.fetchRestrictedAreasFromIlp();
         String[] droneIDs = droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
-        return droneService.calcDeliveryPath(req, drones, servicePoints, restrictedAreas, droneIDs);
+        return droneService.calcDeliveryPath(req, drones, servicePoints, restrictedAreas, droneIDs, dronesForServicePoints);
     }
+
+    /**
+     * Endpoint to calculate the delivery paths for the given array of MedDispatchRec and return the results as a GeoJSON FeatureCollection.
+     * @param req array of MedDispatchRecs, each containing a list of requirements.
+     * @return GeoJSON FeatureCollection object containing the delivery paths and total cost.
+     */
+    @PostMapping("calcDeliveryPathAsGeoJson")
+    public ObjectNode calcDeliveryPathAsGeoJson(@RequestBody List<MedDispatchRecRequest> req) {
+         List<Drone> drones = ilpRestController.fetchDronesFromIlp();
+         List<DroneServicePoint> servicePoints = ilpRestController.fetchServicePointsFromIlp();
+         List<DroneForServicePoint> dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();
+         List<RestrictedArea> restrictedAreas = ilpRestController.fetchRestrictedAreasFromIlp();
+         String[] droneIDs = droneService.queryAvailableDrones(req, drones, dronesForServicePoints);
+
+         // compute the detailed delivery path structure first
+         CalculatedDeliveryPathRequest calc = droneService.calcDeliveryPath(req, drones, servicePoints, restrictedAreas, droneIDs, dronesForServicePoints);
+         // build and return a GeoJSON FeatureCollection object (Jackson ObjectNode)
+         return droneService.buildGeoJsonObject(calc);
+     }
 }

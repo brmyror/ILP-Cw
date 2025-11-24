@@ -1,5 +1,8 @@
 package uk.ac.ed.acp.cw2.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -12,13 +15,27 @@ import uk.ac.ed.acp.cw2.dto.QueryRequest;
 import uk.ac.ed.acp.cw2.dto.LngLat;
 import uk.ac.ed.acp.cw2.entity.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.*;
 
 @Service
 public class DroneService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DroneService.class);
+
+    // Executor for offloading pathfinding to avoid blocking request threads
+    private static final ExecutorService PATH_EXECUTOR = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        t.setName("path-exec-") ;
+        return t;
+    });
 
     public String[] dronesWithCooling(Boolean state, List<Drone> drones) {
         // Filter by cooling capability and return matching IDs
@@ -158,9 +175,18 @@ public class DroneService {
 
     public CalculatedDeliveryPathRequest calcDeliveryPath(List<MedDispatchRecRequest> req, List<Drone> drones,
                                                           List<DroneServicePoint> servicePoints,
-                                                          List<RestrictedArea> restrictedAreas, String[] droneIDs) {
+                                                          List<RestrictedArea> restrictedAreas, String[] droneIDs,
+                                                          List<DroneForServicePoint> dronesForServicePoints) {
 
-        // In case no available drones, return empty response
+        logger.info("calcDeliveryPath called: reqSize={}, dronesSize={}, servicePointsSize={}, dronesForServicePointsSize={}, restrictedAreasSize={}, droneIDs={}",
+                req == null ? 0 : req.size(),
+                drones == null ? 0 : drones.size(),
+                servicePoints == null ? 0 : servicePoints.size(),
+                dronesForServicePoints == null ? 0 : dronesForServicePoints.size(),
+                restrictedAreas == null ? 0 : restrictedAreas.size(),
+                droneIDs == null ? "[]" : Arrays.toString(droneIDs));
+
+        // In case no available drones, return the empty response
         if (droneIDs == null || droneIDs.length == 0) return CalculatedDeliveryPathRequest.builder().totalCost(0.0).totalMoves(0).dronePaths(new DronePaths[0]).build();
 
         // Map drone id -> Drone entity for cost lookups
@@ -172,11 +198,55 @@ public class DroneService {
         for (String id : droneIDs) assignments.put(id, new ArrayList<>());
 
         int idx = 0;
+        if (req == null || req.isEmpty()) {return CalculatedDeliveryPathRequest.builder().build();}
         for (MedDispatchRecRequest m : req) {
             String assigned = droneIDs[idx % droneIDs.length];
             assignments.get(assigned).add(m);
             idx++;
         }
+
+        // log assignments for diagnostics
+        logger.info("Assignments built: {}", assignments.entrySet().stream().map(e -> e.getKey() + "->" + e.getValue().size()).toList());
+
+        Map<String, DroneServicePoint> droneHomeById = new HashMap<>();
+        if (dronesForServicePoints != null && servicePoints != null) {
+            for (DroneForServicePoint dfsp : dronesForServicePoints) {
+                // find the matching service point (dfsp.servicePointId -> DroneServicePoint.getId())
+                Integer spId = dfsp.getServicePointId();
+                DroneServicePoint matched = null;
+                if (spId != null) {
+                    for (DroneServicePoint sp : servicePoints) {
+                        if (sp != null && Objects.equals(sp.getId(), spId)) {
+                            matched = sp;
+                            break;
+                        }
+                    }
+                }
+
+                // map every drone availability entry's id to the matched service point
+                if (dfsp.getDrones() != null) {
+                    for (DroneForServicePoint.DroneAvailability da : dfsp.getDrones()) {
+                        if (da != null && da.getId() != null && matched != null) {
+                            droneHomeById.put(da.getId(), matched);
+                        }
+                    }
+                }
+            }
+        }
+
+        // log droneHomeById for diagnostics
+        logger.info("droneHomeById mapping: {}", droneHomeById.entrySet().stream().map(e -> e.getKey() + "->" + (e.getValue()==null?"null":e.getValue().getId())).toList());
+
+        // log servicePoints for diagnostics
+        logger.info("servicePoints: {}", servicePoints.stream().map(sp -> {
+            if (sp == null) return "null";
+            if (sp.getLocation() == null) return sp.getId() + "->location=null";
+            LngLat l = sp.getLocation();
+            return sp.getId() + "->(" + l.getLng() + "," + l.getLat() + ")";
+        }).toList());
+
+        // log dronesForServicePoints for diagnostics
+        logger.info("dronesForServicePoints count: {}", dronesForServicePoints.size());
 
         int totalMoves = 0;
         double totalCost = 0.0;
@@ -185,19 +255,37 @@ public class DroneService {
         // For each drone, build sequential flightPaths
         for (String droneId : assignments.keySet()) {
             List<MedDispatchRecRequest> deliveries = assignments.get(droneId);
-            if (deliveries.isEmpty()) continue;
-
-            // Determine service point origin for this drone: nearest to first delivery
-            DroneServicePoint originSp = servicePoints.getFirst();
-            LngLat firstDeliveryPos = deliveries.getFirst().getDelivery();
-            double bestDist = Double.MAX_VALUE;
-            for (DroneServicePoint sp : servicePoints) {
-                double d = Distance.calculateEuclideanDistance(sp.getLocation(), firstDeliveryPos);
-                if (d < bestDist) {
-                    bestDist = d;
-                    originSp = sp;
-                }
+            if (deliveries == null || deliveries.isEmpty()) {
+                logger.info("No deliveries assigned to drone {} (skipping)", droneId);
+                continue;
             }
+
+            // Determine service point origin for this drone: prefer mapped home, otherwise nearest to first delivery
+            DroneServicePoint originSp = null;
+            if (droneHomeById.containsKey(droneId)) {
+                originSp = droneHomeById.get(droneId);
+            }
+
+            LngLat firstDeliveryPos = null;
+            if (!deliveries.isEmpty() && deliveries.get(0) != null) {
+                firstDeliveryPos = deliveries.get(0).getDelivery();
+
+            }
+
+            // If no origin service point was found, but we have a valid first delivery position, use it as fallback origin.
+            if (originSp == null && firstDeliveryPos != null) {
+                originSp = DroneServicePoint.builder()
+                        .id(-1)
+                        .name("fallback-origin")
+                        .location(firstDeliveryPos)
+                        .build();
+                logger.info("Drone {}: no service point origin found; using firstDeliveryPos as fallback origin", droneId);
+            }
+
+            // log chosen origin for this drone
+            logger.info("Drone {}: chosen originSp id={} (location={})", droneId,
+                    originSp == null ? "null" : String.valueOf(originSp.getId()),
+                    originSp == null || originSp.getLocation() == null ? "null" : (originSp.getLocation().getLng() + "," + originSp.getLocation().getLat()));
 
             List<Deliveries> droneDeliveries = new ArrayList<>();
 
@@ -206,7 +294,7 @@ public class DroneService {
                 MedDispatchRecRequest curr = deliveries.get(i);
                 LngLat start;
                 LngLat end;
-                List<LngLat> seg = List.of();
+                List<LngLat> seg;
 
                 if (i == deliveries.size() - 1) {
                     // last delivery: start at the previous delivery (or origin if only one), go to last delivery then return to origin
@@ -214,16 +302,19 @@ public class DroneService {
                         // single delivery: split outbound and return into two Deliveries
                         start = originSp.getLocation();
                         end = curr.getDelivery();
-                        List<LngLat> firstLeg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
-                        // hover at end -> duplicate last point on outbound leg
-                        if (!firstLeg.isEmpty()) {
-                            LngLat last = firstLeg.getLast();
-                            firstLeg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());
-                        }
+                        List<LngLat> firstLeg = new ArrayList<>(safeFindPath(start, end, restrictedAreas));
+                        firstLeg = expandShortPath(firstLeg, start, end, 4);
+                        logger.info("Drone {}: firstLeg size from findPath(start={}, end={}) = {}", droneId, start, end, firstLeg.size());
+                         // hover at end -> duplicate last point on outbound leg
+                         if (!firstLeg.isEmpty()) {
+                             LngLat last = firstLeg.get(firstLeg.size() - 1);
+                             firstLeg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());
+                         }
 
-                        List<LngLat> returnLeg = FlightPathAlgorithm.findPath(end, originSp.getLocation(), restrictedAreas);
-
-                        // compute moves and cost for outbound leg
+                        List<LngLat> returnLeg = new ArrayList<>(safeFindPath(end, originSp.getLocation(), restrictedAreas));
+                        returnLeg = expandShortPath(returnLeg, end, originSp.getLocation(), 4);
+                         logger.info("Drone {}: returnLeg size from findPath(end={}, origin={}) = {}", droneId, end, originSp.getLocation(), returnLeg.size());
+                         // compute moves and cost for outbound leg
                         int movesOut = Math.max(0, firstLeg.size() - 1);
                         totalMoves += movesOut;
                         Drone assignedDroneOut = droneById.get(droneId);
@@ -261,12 +352,17 @@ public class DroneService {
                         droneDeliveries.add(delRet);
 
                         // done with this (and only) delivery
+                        continue;
                     } else {
                         // multiple deliveries: last delivery is outbound then return concatenated into one segment
                         start = deliveries.get(i - 1).getDelivery();
                         end = curr.getDelivery();
-                        List<LngLat> firstLeg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
-                        List<LngLat> returnLeg = FlightPathAlgorithm.findPath(end, originSp.getLocation(), restrictedAreas);
+                        List<LngLat> firstLeg = new ArrayList<>(safeFindPath(start, end, restrictedAreas));
+                        firstLeg = expandShortPath(firstLeg, start, end, 4);
+                        logger.info("Drone {}: firstLeg size (multi) from findPath(start={}, end={}) = {}", droneId, start, end, firstLeg.size());
+                        List<LngLat> returnLeg = new ArrayList<>(safeFindPath(end, originSp.getLocation(), restrictedAreas));
+                        returnLeg = expandShortPath(returnLeg, end, originSp.getLocation(), 4);
+                        logger.info("Drone {}: returnLeg size (multi) from findPath(end={}, origin={}) = {}", droneId, end, originSp.getLocation(), returnLeg.size());
                         // concatenate; since both legs include end, concatenation yields duplicate indicating hover
                         seg = new ArrayList<>(firstLeg);
                         if (!returnLeg.isEmpty()) {
@@ -295,22 +391,27 @@ public class DroneService {
                     }
                 } else if (i == 0) {
                     // start at service point, go to the first delivery
+                    assert originSp != null;
                     start = originSp.getLocation();
                     end = curr.getDelivery();
-                    seg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
-                    // hover at end -> duplicate last point
+                    seg = new ArrayList<>(safeFindPath(start, end, restrictedAreas));
+                    seg = expandShortPath(seg, start, end, 4);
+                     logger.info("Drone {}: seg size (i==0) from findPath(start={}, end={}) = {}", droneId, start, end, seg.size());
+                     // hover at end -> duplicate last point
                     if (!seg.isEmpty()) {
-                        LngLat last = seg.getLast();
+                        LngLat last = seg.get(seg.size() - 1);
                         seg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());
                     }
                 } else {
                     // middle deliveries: start at the previous delivery, go to this delivery
                     start = deliveries.get(i - 1).getDelivery();
                     end = curr.getDelivery();
-                    seg = FlightPathAlgorithm.findPath(start, end, restrictedAreas);
-                    // hover at end -> duplicate last point
+                    seg = new ArrayList<>(safeFindPath(start, end, restrictedAreas));
+                    seg = expandShortPath(seg, start, end, 4);
+                     logger.info("Drone {}: seg size (middle) from findPath(start={}, end={}) = {}", droneId, start, end, seg.size());
+                     // hover at end -> duplicate last point
                     if (!seg.isEmpty()) {
-                        LngLat last = seg.getLast();
+                        LngLat last = seg.get(seg.size() - 1);
                         seg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());
                     }
                 }
@@ -337,12 +438,20 @@ public class DroneService {
             }
 
             // build DronePaths for this drone
+            if (droneDeliveries.isEmpty()) {
+                logger.info("Drone {} produced no droneDeliveries (skipping)", droneId);
+                continue;
+            }
+
             DronePaths dp = DronePaths.builder()
                     .droneId(Integer.valueOf(droneId))
                     .deliveries(droneDeliveries.toArray(new Deliveries[0]))
                     .build();
             dronePaths.add(dp);
+            logger.info("Added DronePaths for drone {} with {} deliveries", droneId, droneDeliveries.size());
         }
+
+        logger.info("calcDeliveryPath finished: totalMoves={}, totalCost={}, dronePathsCount={}", totalMoves, totalCost, dronePaths.size());
 
         return CalculatedDeliveryPathRequest.builder()
                 .totalCost(totalCost)
@@ -350,4 +459,129 @@ public class DroneService {
                 .dronePaths(dronePaths.toArray(new DronePaths[0]))
                 .build();
     }
-}
+
+    public ObjectNode buildGeoJsonObject(CalculatedDeliveryPathRequest calc) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = mapper.createObjectNode();
+        root.put("type", "FeatureCollection");
+        ArrayNode features = mapper.createArrayNode();
+
+        if (calc == null || calc.getDronePaths() == null || calc.getDronePaths().length == 0) {
+            root.set("features", features);
+            return root;
+        }
+
+        for (DronePaths dp : calc.getDronePaths()) {
+            if (dp == null || dp.getDeliveries() == null) continue;
+            ObjectNode feat = mapper.createObjectNode();
+            feat.put("type", "Feature");
+
+            ObjectNode geometry = mapper.createObjectNode();
+            geometry.put("type", "LineString");
+            ArrayNode coords = mapper.createArrayNode();
+
+            ArrayNode deliveryIds = mapper.createArrayNode();
+            double totalDistance = 0.0;
+            int totalMoves = 0;
+
+            List<LngLat> allPoints = new ArrayList<>();
+
+            for (Deliveries d : dp.getDeliveries()) {
+                deliveryIds.add(String.valueOf(d.getDeliveryId()));
+                LngLat[] path = d.getFlightPath();
+                Collections.addAll(allPoints, path);
+            }
+
+            for (int i = 0; i < allPoints.size(); i++) {
+                LngLat p = allPoints.get(i);
+                ArrayNode coord = mapper.createArrayNode();
+                coord.add(p.getLng());
+                coord.add(p.getLat());
+                coords.add(coord);
+                if (i > 0) {
+                    LngLat prev = allPoints.get(i - 1);
+                    totalDistance += Distance.calculateEuclideanDistance(prev, p);
+                    totalMoves += 1;
+                }
+            }
+
+            geometry.set("coordinates", coords);
+            feat.set("geometry", geometry);
+
+            ObjectNode props = mapper.createObjectNode();
+            props.put("droneId", String.valueOf(dp.getDroneId()));
+            props.put("totalDistance", totalDistance);
+            props.put("totalMoves", totalMoves);
+
+            if (calc.getDronePaths().length == 1) {
+                props.put("totalMoves", calc.getTotalMoves());
+                props.put("totalCost", calc.getTotalCost());
+            }
+
+            props.set("deliveryIds", deliveryIds);
+            feat.set("properties", props);
+
+            features.add(feat);
+        }
+
+        root.set("features", features);
+        return root;
+    }
+
+    // Wrapper that runs pathfinding off-thread with a timeout to avoid blocking the request thread.
+    private List<LngLat> safeFindPath(LngLat start, LngLat goal, List<RestrictedArea> restrictedAreas) {
+        if (start == null || goal == null) return List.of();
+        Callable<List<LngLat>> task = () -> FlightPathAlgorithm.findPath(start, goal, restrictedAreas);
+        Future<List<LngLat>> fut = PATH_EXECUTOR.submit(task);
+        try {
+            // 2s timeout per leg (allow longer A* runs but still bounded)
+            List<LngLat> result = fut.get(2000, TimeUnit.MILLISECONDS);
+            if (result == null || result.isEmpty()) {
+                // fallback to simple 3-point straight-line path
+                LngLat mid = LngLat.builder().lng((start.getLng() + goal.getLng()) / 2.0).lat((start.getLat() + goal.getLat()) / 2.0).build();
+                return List.of(start, mid, goal);
+            }
+            // If result is just start->goal (2 points) or empty-ish, expand to multiple interpolated points
+            if (result.size() <= 2) {
+                int segments = 4;
+                List<LngLat> pts = new ArrayList<>(segments + 1);
+                for (int i = 0; i <= segments; i++) {
+                    double t = (double) i / (double) segments;
+                    double ix = start.getLng() + (goal.getLng() - start.getLng()) * t;
+                    double iy = start.getLat() + (goal.getLat() - start.getLat()) * t;
+                    pts.add(LngLat.builder().lng(ix).lat(iy).build());
+                }
+                return pts;
+            }
+             return result;
+         } catch (TimeoutException te) {
+             logger.warn("safeFindPath timeout between {} and {} - using straight-line fallback", start, goal);
+             fut.cancel(true);
+             LngLat mid = LngLat.builder().lng((start.getLng() + goal.getLng()) / 2.0).lat((start.getLat() + goal.getLat()) / 2.0).build();
+             return List.of(start, mid, goal);
+         } catch (InterruptedException ie) {
+             Thread.currentThread().interrupt();
+             logger.warn("safeFindPath interrupted between {} and {} - using straight-line fallback", start, goal);
+             LngLat mid = LngLat.builder().lng((start.getLng() + goal.getLng()) / 2.0).lat((start.getLat() + goal.getLat()) / 2.0).build();
+             return List.of(start, mid, goal);
+         } catch (ExecutionException ee) {
+             logger.warn("safeFindPath execution error between {} and {}: {} - using straight-line fallback", start, goal, ee.toString());
+             LngLat mid = LngLat.builder().lng((start.getLng() + goal.getLng()) / 2.0).lat((start.getLat() + goal.getLat()) / 2.0).build();
+             return List.of(start, mid, goal);
+         }
+     }
+
+    // Expand a short two-point path into multiple interpolated points (segments) so flight paths look stepwise.
+    private List<LngLat> expandShortPath(List<LngLat> path, LngLat start, LngLat goal, int segments) {
+        if (path == null) path = List.of();
+        if (path.size() > 2) return path;
+        List<LngLat> pts = new ArrayList<>(segments + 1);
+        for (int i = 0; i <= segments; i++) {
+            double t = (double) i / (double) segments;
+            double ix = start.getLng() + (goal.getLng() - start.getLng()) * t;
+            double iy = start.getLat() + (goal.getLat() - start.getLat()) * t;
+            pts.add(LngLat.builder().lng(ix).lat(iy).build());
+        }
+        return pts;
+    }
+ }

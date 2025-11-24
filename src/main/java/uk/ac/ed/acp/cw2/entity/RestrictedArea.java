@@ -19,6 +19,8 @@ public class RestrictedArea {
     @NotNull
     private limits limits;
 
+    private vertices[] vertices;
+
     @Getter
     @Setter
     @Builder
@@ -29,6 +31,13 @@ public class RestrictedArea {
         private Integer upper;
     }
 
-    @NotNull
-    private LngLat[] vertices;
+    @Getter
+    @Setter
+    @Builder
+    public static class vertices {
+        @NotNull
+        private Double lng;
+        @NotNull
+        private Double lat;
+    }
 }
