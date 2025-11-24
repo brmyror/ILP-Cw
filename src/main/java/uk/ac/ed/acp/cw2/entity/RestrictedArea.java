@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import uk.ac.ed.acp.cw2.dto.LngLat;
 
 @Getter
 @Setter
