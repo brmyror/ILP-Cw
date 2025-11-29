@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URL;
 import java.util.List;
 
-
+@CrossOrigin(origins = "*")
 @RestController()
 @RequestMapping("/api/v1")
 public class ServiceController {

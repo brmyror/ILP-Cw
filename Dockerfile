@@ -12,7 +12,9 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /app
 # Copy the built jar file from the previous stage to the container
 COPY --from=build /app/target/*.jar ./app.jar
-# Expose the application port
+# Expose the application port (this declares the container port only)
+# Note: Dockerfile cannot force the host port mapping. To bind host port 8080 to container port 8080
+# run the container with: docker run -p 8080:8080 ilp_submission_image:latest
 EXPOSE 8080
 # Set the environment variable for the ILP endpoint (typo-corrected name)
 ENV ILP_ENDPOINT=https://ilp-rest-2025-bvh6e9hschfagrgy.ukwest-01.azurewebsites.net/

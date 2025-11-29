@@ -1,0 +1,227 @@
+{
+  "useCases": [
+    {
+      "id": "sample-1",
+      "name": "Simple Delivery Scenario",
+      "description": "A single simple delivery without crossing a Restricted Area.",
+      "dispatches": [
+        {
+          "id": 1,
+          "date": "2025-11-28",
+          "time": "09:00",
+          "requirements": {
+            "capacity": 5,
+            "cooling": true,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.173861, "lat": 55.946087 }
+        }
+      ]
+    },
+    {
+      "id": "sample-2",
+      "name": "Delivery Scenario with Restricted Area Crossing",
+      "description": "Delivery with a Restricted Area crossing so that the A* algorithm can find a path to it.",
+      "dispatches": [
+        {
+          "id": 1,
+          "date": "2025-11-28",
+          "time": "09:00",
+          "requirements": {
+            "capacity": 5,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.194095, "lat": 55.943087 }
+        }
+      ]
+    },
+    {
+      "id": "sample-3",
+      "name": "Multiple Deliveries Scenario",
+      "description": "Multiple deliveries with the crossing of a Restricted Area between them.",
+      "dispatches": [
+        {
+          "id": 1,
+          "date": "2025-11-28",
+          "time": "10:00",
+          "requirements": {
+            "capacity": 4,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.196752, "lat": 55.942809 }
+        },
+        {
+          "id": 2,
+          "date": "2025-11-28",
+          "time": "12:00",
+          "requirements": {
+            "capacity": 0.5
+          },
+          "delivery": { "lng": -3.192637, "lat": 55.947038 }
+        }
+      ]
+    },
+    {
+      "id": "sample-4",
+      "name": "Multiple Deliveries Scenario starting from multiple Service Points",
+      "description": "Multiple deliveries starting at Ocean Terminal and Appleton Tower.",
+      "dispatches": [
+        {
+          "id": 1,
+          "date": "2025-11-28",
+          "time": "16:00",
+          "requirements": {
+            "capacity": 4,
+            "heating": true
+          },
+          "delivery": { "lng": -3.19907, "lat": 55.966271 }
+        },
+        {
+          "id": 2,
+          "date": "2025-11-28",
+          "time": "18:00",
+          "requirements": {
+            "capacity": 0.5
+          },
+          "delivery": { "lng": -3.154144, "lat": 55.96166 }
+        },
+        {
+          "id": 3,
+          "date": "2025-11-28",
+          "time": "20:00",
+          "requirements": {
+            "capacity": 0.5
+          },
+          "delivery": { "lng": -3.227876, "lat": 55.982754 }
+        },
+        {
+          "id": 4,
+          "date": "2025-11-28",
+          "time": "22:00",
+          "requirements": {
+            "capacity": 0.5
+          },
+          "delivery": { "lng": -3.173692, "lat": 55.932784 }
+        },
+        {
+          "id": 5,
+          "date": "2025-11-28",
+          "time": "23:00",
+          "requirements": {
+            "capacity": 0.5
+          },
+          "delivery": { "lng": -3.210729, "lat": 55.94163 }
+        }
+      ]
+    },
+    {
+      "id": "sample-5",
+      "name": "Delivery Scenario with All drones active",
+      "description": "Multiple deliveries with each one being made by a single drone.",
+      "dispatches": [
+        {
+          "id": 1,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.172508, "lat": 55.938897 }
+        },
+        {
+          "id": 2,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.198572, "lat": 55.933705 }
+        },
+        {
+          "id": 3,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.198572, "lat": 55.933705 }
+        },
+        {
+          "id": 4,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.209203, "lat": 55.942262 }
+        },
+        {
+          "id": 6,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.174980, "lat": 55.964619 }
+        },
+        {
+          "id": 7,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.153156, "lat": 55.968769 }
+        },
+        {
+          "id": 8,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.186078, "lat": 55.986634 }
+        },
+        {
+          "id": 9,
+          "date": "2025-11-30",
+          "time": "13:00",
+          "requirements": {
+            "capacity": 0.2,
+            "cooling": false,
+            "heating": false,
+            "maxCost": 50
+          },
+          "delivery": { "lng": -3.204254, "lat": 55.968193 }
+        }
+      ]
+    }
+  ]
+}
+
