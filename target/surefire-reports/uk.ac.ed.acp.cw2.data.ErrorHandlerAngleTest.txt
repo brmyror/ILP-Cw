@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: uk.ac.ed.acp.cw2.data.ErrorHandlerAngleTest
+-------------------------------------------------------------------------------
+Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.303 s -- in uk.ac.ed.acp.cw2.data.ErrorHandlerAngleTest
