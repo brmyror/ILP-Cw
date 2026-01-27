@@ -1,0 +1,30 @@
+<changelist name="Uncommitted_changes_before_Update_at_27_01_2026_14_44_[Changes]" date="1769525084813" recycled="true" deleted="true">
+  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_01_2026_14_44_[Changes]/shelved.patch" />
+  <option name="DESCRIPTION" value="Uncommitted changes before Update at 27/01/2026 14:44 [Changes]" />
+  <binary>
+    <option name="BEFORE_PATH" value="target/test-classes/uk/ac/ed/acp/cw2/service/BaseServiceTest.class" />
+    <option name="AFTER_PATH" value="target/test-classes/uk/ac/ed/acp/cw2/service/BaseServiceTest.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_01_2026_14_44_[Changes]/BaseServiceTest.class" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" value="target/IlpTutorial1-0.0.1-SNAPSHOT.jar" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" value="target/classes/uk/ac/ed/acp/cw2/dto/CalculatedDeliveryPathRequest$CalculatedDeliveryPathRequestBuilder.class" />
+    <option name="AFTER_PATH" value="target/classes/uk/ac/ed/acp/cw2/dto/CalculatedDeliveryPathRequest$CalculatedDeliveryPathRequestBuilder.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_01_2026_14_44_[Changes]/CalculatedDeliveryPathRequest$CalculatedDeliveryPathRequestBuilder.class" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" value="target/classes/uk/ac/ed/acp/cw2/service/DroneService.class" />
+    <option name="AFTER_PATH" value="target/classes/uk/ac/ed/acp/cw2/service/DroneService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_01_2026_14_44_[Changes]/DroneService.class" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" value="target/classes/uk/ac/ed/acp/cw2/dto/CalculatedDeliveryPathRequest.class" />
+    <option name="AFTER_PATH" value="target/classes/uk/ac/ed/acp/cw2/dto/CalculatedDeliveryPathRequest.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_27_01_2026_14_44_[Changes]/CalculatedDeliveryPathRequest.class" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" value="target/IlpTutorial1-0.0.1-SNAPSHOT.jar.original" />
+  </binary>
+</changelist>
