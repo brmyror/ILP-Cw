@@ -7,7 +7,7 @@ export default function FlightpathLayer({ data, step = Infinity, playing = false
     const drones = useMemo(() => Array.isArray(data) ? data : [data], [data]);
     const map = useMap();
 
-    // Colors for each drone
+    // Colours for each drone
     const colours = ["red", "blue", "green", "purple", "orange", "black"];
 
     useEffect(() => {

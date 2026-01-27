@@ -1,6 +1,6 @@
-import styles from './DispatchList.module.css';
+import styles from './DispatchTable.module.css';
 
-export default function DispatchList({ dispatches = [], onDelete = id => {} }) {
+export default function DispatchTable({ dispatches = [], onDelete = id => {} }) {
 
     {/* Helper function to format coordinates for display */}
     function formatVal(val, precision) {

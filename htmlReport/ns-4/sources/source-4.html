@@ -1,0 +1,440 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FlightPathAlgorithm</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">uk.ac.ed.acp.cw2.data</a>
+</div>
+
+<h1>Coverage Summary for Class: FlightPathAlgorithm (uk.ac.ed.acp.cw2.data)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FlightPathAlgorithm</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70.8%
+  </span>
+  <span class="absValue">
+    (68/96)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96%
+  </span>
+  <span class="absValue">
+    (120/125)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FlightPathAlgorithm$Node</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    80%
+  </span>
+  <span class="absValue">
+    (8/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (25/25)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    92.9%
+  </span>
+  <span class="absValue">
+    (13/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71.7%
+  </span>
+  <span class="absValue">
+    (76/106)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96.7%
+  </span>
+  <span class="absValue">
+    (145/150)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package uk.ac.ed.acp.cw2.data;
+&nbsp;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import uk.ac.ed.acp.cw2.dto.LngLat;
+&nbsp;import uk.ac.ed.acp.cw2.entity.RestrictedArea;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;import java.awt.geom.Path2D;
+&nbsp;import java.awt.BasicStroke;
+&nbsp;import java.awt.geom.Area;
+&nbsp;import java.awt.Shape;
+&nbsp;import java.awt.geom.Line2D;
+&nbsp;
+<b class="nc">&nbsp;public class FlightPathAlgorithm {</b>
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(FlightPathAlgorithm.class);</b>
+&nbsp;
+&nbsp;    // Single step size used for grid snapping and neighbor expansion
+&nbsp;    private static final double STEP = 1.5E-4;
+&nbsp;
+&nbsp;    public static List&lt;LngLat&gt; findPath(LngLat start, LngLat goal, List&lt;RestrictedArea&gt; restrictedAreas) {
+&nbsp;
+&nbsp;
+&nbsp;        // A simple grid-based A* implementation: snap coordinates to step grid, search 16-direction neighbors.
+&nbsp;        //https://www.geeksforgeeks.org/dsa/a-search-algorithm/
+<b class="pc">&nbsp;        if (start == null || goal == null) return List.of();</b>
+&nbsp;
+&nbsp;        // quick check: if start and goal are effectively the same point, return direct
+<b class="pc">&nbsp;        if (Math.hypot(start.getLng() - goal.getLng(), start.getLat() - goal.getLat()) &lt;= STEP) {</b>
+<b class="nc">&nbsp;            return List.of(start, goal);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Precompute buffered Areas for restricted areas once per call
+<b class="fc">&nbsp;        final List&lt;Area&gt; bufferedAreas = buildBufferedAreas(restrictedAreas);</b>
+&nbsp;
+&nbsp;        // default segments for straight-line fallback
+<b class="fc">&nbsp;        int segments = (int) (Distance.calculateEuclideanDistance(start, goal) / STEP);</b>
+<b class="pc">&nbsp;        if (segments &lt; 1) segments = 1;</b>
+&nbsp;
+&nbsp;        // If there are no restricted areas, just do a straight line
+<b class="fc">&nbsp;        if (bufferedAreas.isEmpty()) {</b>
+<b class="fc">&nbsp;            return getStraightlinePath(start, goal, segments);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        Node startNode = Node.fromLngLat(start);</b>
+<b class="fc">&nbsp;        Node goalNode = Node.fromLngLat(goal);</b>
+&nbsp;
+&nbsp;        // Sample along the straight line to see if it intersects any buffered area.
+<b class="fc">&nbsp;        boolean intersects = false;</b>
+<b class="fc">&nbsp;        int samples = segments;</b>
+<b class="fc">&nbsp;        Node prev = startNode;</b>
+<b class="pc">&nbsp;        for (int s = 1; s &lt;= samples; s++) {</b>
+<b class="fc">&nbsp;            double t = (double) s / samples;</b>
+<b class="fc">&nbsp;            double ix = start.getLng() + (goal.getLng() - start.getLng()) * t;</b>
+<b class="fc">&nbsp;            double iy = start.getLat() + (goal.getLat() - start.getLat()) * t;</b>
+<b class="fc">&nbsp;            Node current = new Node(ix, iy);</b>
+&nbsp;
+<b class="fc">&nbsp;            if (isInsideAnyArea(current, bufferedAreas) ||</b>
+<b class="fc">&nbsp;                isSegmentIntersectAnyArea(prev, current, bufferedAreas)) {</b>
+<b class="fc">&nbsp;                intersects = true;</b>
+&nbsp;                break;
+&nbsp;            }
+<b class="fc">&nbsp;            prev = current;</b>
+&nbsp;        }
+<b class="pc">&nbsp;        if (!intersects) {</b>
+<b class="nc">&nbsp;            return getStraightlinePath(start, goal, segments);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Define a simple search bounding box around start/goal and restricted areas to keep search finite
+<b class="fc">&nbsp;        double minX = Math.min(start.getLng(), goal.getLng());</b>
+<b class="fc">&nbsp;        double maxX = Math.max(start.getLng(), goal.getLng());</b>
+<b class="fc">&nbsp;        double minY = Math.min(start.getLat(), goal.getLat());</b>
+<b class="fc">&nbsp;        double maxY = Math.max(start.getLat(), goal.getLat());</b>
+<b class="pc">&nbsp;        if (restrictedAreas != null) {</b>
+<b class="fc">&nbsp;            for (RestrictedArea ra : restrictedAreas) {</b>
+<b class="pc">&nbsp;                if (ra == null || ra.getVertices() == null) continue;</b>
+<b class="fc">&nbsp;                for (int i = 0; i &lt; ra.getVertices().length; i++) {</b>
+<b class="fc">&nbsp;                    RestrictedArea.vertices v = ra.getVertices()[i];</b>
+<b class="pc">&nbsp;                    if (v == null) continue;</b>
+<b class="fc">&nbsp;                    minX = Math.min(minX, v.getLng());</b>
+<b class="fc">&nbsp;                    maxX = Math.max(maxX, v.getLng());</b>
+<b class="fc">&nbsp;                    minY = Math.min(minY, v.getLat());</b>
+<b class="fc">&nbsp;                    maxY = Math.max(maxY, v.getLat());</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;        // add padding of 20 steps around all relevant coordinates
+<b class="fc">&nbsp;        double padding = 20 * STEP;</b>
+<b class="fc">&nbsp;        minX -= padding;</b>
+<b class="fc">&nbsp;        maxX += padding;</b>
+<b class="fc">&nbsp;        minY -= padding;</b>
+<b class="fc">&nbsp;        maxY += padding;</b>
+&nbsp;
+<b class="fc">&nbsp;        PriorityQueue&lt;Node&gt; open = new PriorityQueue&lt;&gt;(Comparator.comparingDouble(n -&gt; n.f));</b>
+<b class="fc">&nbsp;        Map&lt;Node, Node&gt; cameFrom = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        Map&lt;Node, Double&gt; gScore = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        Set&lt;Node&gt; closed = new HashSet&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        open.add(startNode);</b>
+<b class="fc">&nbsp;        gScore.put(startNode, 0.0);</b>
+&nbsp;
+<b class="fc">&nbsp;        int maxIterations = 200000;</b>
+<b class="fc">&nbsp;        int iterations = 0;</b>
+&nbsp;
+<b class="pc">&nbsp;        while (!open.isEmpty() &amp;&amp; iterations++ &lt; maxIterations) {</b>
+<b class="fc">&nbsp;            Node current = open.poll();</b>
+&nbsp;
+&nbsp;            // consider goal reached if the current node equals the goal node (grid equality)
+&nbsp;            // OR if it is within one step of the goal
+<b class="fc">&nbsp;            if (current.equals(goalNode) || current.distanceTo(goalNode) &lt;= STEP) {</b>
+<b class="fc">&nbsp;                List&lt;LngLat&gt; path = reconstructPath(cameFrom, current);</b>
+&nbsp;                // ensure the exact goal coordinates are the final point in the path
+<b class="pc">&nbsp;                if (path.isEmpty() ||</b>
+<b class="pc">&nbsp;                        Math.hypot(path.get(path.size() - 1).getLng() - goal.getLng(),</b>
+<b class="fc">&nbsp;                                path.get(path.size() - 1).getLat() - goal.getLat()) &gt; 0.0) {</b>
+<b class="fc">&nbsp;                    path.add(goal);</b>
+&nbsp;                }
+<b class="fc">&nbsp;                return path;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            closed.add(current);</b>
+&nbsp;
+<b class="fc">&nbsp;            for (Node neighbor : current.neighbors()) {</b>
+&nbsp;                // enforce bounding box
+<b class="pc">&nbsp;                if (neighbor.x &lt; minX || neighbor.x &gt; maxX || neighbor.y &lt; minY || neighbor.y &gt; maxY) {</b>
+&nbsp;                    continue;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                if (closed.contains(neighbor)) continue;</b>
+&nbsp;
+&nbsp;                // collision checks: skip neighbors that collide with any buffered Area
+<b class="fc">&nbsp;                if (isInsideAnyArea(neighbor, bufferedAreas) ||</b>
+<b class="fc">&nbsp;                    isSegmentIntersectAnyArea(current, neighbor, bufferedAreas)) {</b>
+&nbsp;                    continue;
+&nbsp;                }
+&nbsp;
+<b class="fc">&nbsp;                double tentativeG = gScore.getOrDefault(current, Double.POSITIVE_INFINITY) + current.distanceTo(neighbor);</b>
+<b class="fc">&nbsp;                double existingG = gScore.getOrDefault(neighbor, Double.POSITIVE_INFINITY);</b>
+<b class="fc">&nbsp;                if (tentativeG &lt; existingG) {</b>
+<b class="fc">&nbsp;                    cameFrom.put(neighbor, current);</b>
+<b class="fc">&nbsp;                    gScore.put(neighbor, tentativeG);</b>
+<b class="fc">&nbsp;                    neighbor.g = tentativeG;</b>
+<b class="fc">&nbsp;                    neighbor.h = neighbor.distanceTo(goalNode);</b>
+<b class="fc">&nbsp;                    neighbor.f = neighbor.g + neighbor.h;</b>
+&nbsp;                    // add to open if not present (or re-add to update priority)
+<b class="fc">&nbsp;                    open.remove(neighbor);</b>
+<b class="fc">&nbsp;                    open.add(neighbor);</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        logger.warn(&quot;A* search failed to find a path within {} iterations&quot;, maxIterations);</b>
+<b class="nc">&nbsp;        return List.of();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static List&lt;LngLat&gt; getStraightlinePath(LngLat start, LngLat goal, int segments) {
+<b class="fc">&nbsp;        List&lt;LngLat&gt; pts = new ArrayList&lt;&gt;(segments + 1);</b>
+<b class="fc">&nbsp;        for (int i = 0; i &lt;= segments; i++) {</b>
+<b class="fc">&nbsp;            double t = (double) i / (double) segments;</b>
+<b class="fc">&nbsp;            double ix = start.getLng() + (goal.getLng() - start.getLng()) * t;</b>
+<b class="fc">&nbsp;            double iy = start.getLat() + (goal.getLat() - start.getLat()) * t;</b>
+<b class="fc">&nbsp;            pts.add(LngLat.builder().lng(ix).lat(iy).build());</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return pts;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static List&lt;LngLat&gt; reconstructPath(Map&lt;Node, Node&gt; cameFrom, Node current) {
+<b class="fc">&nbsp;        LinkedList&lt;LngLat&gt; path = new LinkedList&lt;&gt;();</b>
+<b class="fc">&nbsp;        Node c = current;</b>
+<b class="fc">&nbsp;        while (c != null) {</b>
+<b class="fc">&nbsp;            path.addFirst(LngLat.builder().lng(c.x).lat(c.y).build());</b>
+<b class="fc">&nbsp;            c = cameFrom.get(c);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return path;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Build buffered Areas once per call to avoid repeated Path2D/Area creation
+&nbsp;    private static List&lt;Area&gt; buildBufferedAreas(List&lt;RestrictedArea&gt; restrictedAreas) {
+<b class="fc">&nbsp;        List&lt;Area&gt; areas = new ArrayList&lt;&gt;();</b>
+<b class="pc">&nbsp;        if (restrictedAreas == null) return areas;</b>
+<b class="fc">&nbsp;        for (RestrictedArea ra : restrictedAreas) {</b>
+<b class="pc">&nbsp;            if (ra == null || ra.getVertices() == null || ra.getVertices().length == 0) continue;</b>
+<b class="fc">&nbsp;            Path2D.Double poly = new Path2D.Double();</b>
+<b class="fc">&nbsp;            poly.moveTo(ra.getVertices()[0].getLng(), ra.getVertices()[0].getLat());</b>
+<b class="fc">&nbsp;            for (int i = 1; i &lt; ra.getVertices().length; i++) {</b>
+<b class="fc">&nbsp;                poly.lineTo(ra.getVertices()[i].getLng(), ra.getVertices()[i].getLat());</b>
+&nbsp;            }
+<b class="fc">&nbsp;            poly.closePath();</b>
+&nbsp;
+&nbsp;            // Using BasicStroke to add a buffer the size of a step around the polygon like how the width of a pen
+&nbsp;            // will give a slight buffer to a shape
+<b class="fc">&nbsp;            Area area = new Area(poly);</b>
+<b class="fc">&nbsp;            float strokeWidth = (float) STEP;</b>
+<b class="fc">&nbsp;            BasicStroke stroke = new BasicStroke(strokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);</b>
+<b class="fc">&nbsp;            Shape stroked = stroke.createStrokedShape(poly);</b>
+<b class="fc">&nbsp;            area.add(new Area(stroked));</b>
+<b class="fc">&nbsp;            areas.add(area);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return areas;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static boolean isInsideAnyArea(Node p, List&lt;Area&gt; areas) {
+<b class="pc">&nbsp;        if (areas == null || areas.isEmpty()) return false;</b>
+<b class="fc">&nbsp;        for (Area a : areas) {</b>
+<b class="pc">&nbsp;            if (a != null &amp;&amp; a.contains(p.x, p.y)) return true;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // check whether the straight line segment between two nodes intersects any buffered restricted Area
+&nbsp;    private static boolean isSegmentIntersectAnyArea(Node a, Node b, List&lt;Area&gt; areas) {
+<b class="pc">&nbsp;        if (areas == null || areas.isEmpty()) return false;</b>
+<b class="fc">&nbsp;        Line2D.Double line = new Line2D.Double(a.x, a.y, b.x, b.y);</b>
+<b class="fc">&nbsp;        float strokeWidth = (float) STEP;</b>
+<b class="fc">&nbsp;        BasicStroke stroke = new BasicStroke(strokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);</b>
+<b class="fc">&nbsp;        Shape strokedLine = stroke.createStrokedShape(line);</b>
+<b class="fc">&nbsp;        Area lineArea = new Area(strokedLine);</b>
+&nbsp;
+<b class="fc">&nbsp;        for (Area area : areas) {</b>
+<b class="pc">&nbsp;            if (area == null) continue;</b>
+<b class="fc">&nbsp;            Area copy = new Area(area);</b>
+<b class="fc">&nbsp;            copy.intersect(lineArea);</b>
+<b class="fc">&nbsp;            if (!copy.isEmpty()) return true;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return false;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static class Node {
+&nbsp;        final double x; // snapped lng
+&nbsp;        final double y; // snapped lat
+&nbsp;        final int gx;   // grid x index
+&nbsp;        final int gy;   // grid y index
+<b class="fc">&nbsp;        double g = 0;</b>
+<b class="fc">&nbsp;        double h = 0;</b>
+<b class="fc">&nbsp;        double f = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        Node(double x, double y) {</b>
+&nbsp;            // snap to grid so equals/hashCode work reliably
+<b class="fc">&nbsp;            int gridX = (int) Math.round(x / STEP);</b>
+<b class="fc">&nbsp;            int gridY = (int) Math.round(y / STEP);</b>
+<b class="fc">&nbsp;            this.gx = gridX;</b>
+<b class="fc">&nbsp;            this.gy = gridY;</b>
+<b class="fc">&nbsp;            this.x = gridX * STEP;</b>
+<b class="fc">&nbsp;            this.y = gridY * STEP;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        static Node fromLngLat(LngLat p) {
+<b class="fc">&nbsp;            return new Node(p.getLng(), p.getLat());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        List&lt;Node&gt; neighbors() {
+&nbsp;            // Use 16 compass directions (multiples of 22.5 degrees)
+<b class="fc">&nbsp;            List&lt;Node&gt; n = new ArrayList&lt;&gt;(16);</b>
+<b class="fc">&nbsp;            for (int i = 0; i &lt; 16; i++) {</b>
+<b class="fc">&nbsp;                double angle = Math.toRadians(i * 22.5);</b>
+<b class="fc">&nbsp;                double dx = Math.cos(angle) * STEP;</b>
+<b class="fc">&nbsp;                double dy = Math.sin(angle) * STEP;</b>
+<b class="fc">&nbsp;                n.add(new Node(x + dx, y + dy));</b>
+&nbsp;            }
+<b class="fc">&nbsp;            return n;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        double distanceTo(Node o) {
+<b class="fc">&nbsp;            double dx = this.x - o.x;</b>
+<b class="fc">&nbsp;            double dy = this.y - o.y;</b>
+<b class="fc">&nbsp;            return Math.hypot(dx, dy);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public boolean equals(Object o) {
+<b class="pc">&nbsp;            if (this == o) return true;</b>
+<b class="pc">&nbsp;            if (!(o instanceof Node node)) return false;</b>
+<b class="fc">&nbsp;            return gx == node.gx &amp;&amp; gy == node.gy;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        @Override
+&nbsp;        public int hashCode() {
+<b class="fc">&nbsp;            return Objects.hash(gx, gy);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-26 21:17</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,753 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DroneService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">uk.ac.ed.acp.cw2.service</a>
+</div>
+
+<h1>Coverage Summary for Class: DroneService (uk.ac.ed.acp.cw2.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DroneService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (16/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66%
+  </span>
+  <span class="absValue">
+    (124/188)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90.6%
+  </span>
+  <span class="absValue">
+    (347/383)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package uk.ac.ed.acp.cw2.service;
+&nbsp;
+&nbsp;import com.fasterxml.jackson.databind.ObjectMapper;
+&nbsp;import com.fasterxml.jackson.databind.node.ArrayNode;
+&nbsp;import com.fasterxml.jackson.databind.node.ObjectNode;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.web.server.ResponseStatusException;
+&nbsp;import uk.ac.ed.acp.cw2.data.Distance;
+&nbsp;import uk.ac.ed.acp.cw2.data.DynamicQueries;
+&nbsp;import uk.ac.ed.acp.cw2.data.FlightPathAlgorithm;
+&nbsp;import uk.ac.ed.acp.cw2.dto.CalculatedDeliveryPathRequest;
+&nbsp;import uk.ac.ed.acp.cw2.dto.LngLat;
+&nbsp;import uk.ac.ed.acp.cw2.dto.MedDispatchRecRequest;
+&nbsp;import uk.ac.ed.acp.cw2.dto.PlanningDiagnostics;
+&nbsp;import uk.ac.ed.acp.cw2.dto.QueryRequest;
+&nbsp;import uk.ac.ed.acp.cw2.entity.*;
+&nbsp;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;import java.time.DayOfWeek;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.time.LocalTime;
+&nbsp;import java.util.*;
+&nbsp;import java.util.concurrent.*;
+&nbsp;
+<b class="fc">&nbsp;@Service</b>
+<b class="fc">&nbsp;public class DroneService {</b>
+&nbsp;
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(DroneService.class);</b>
+&nbsp;
+&nbsp;    // Executor for offloading pathfinding to avoid blocking request threads
+<b class="fc">&nbsp;    private static final ExecutorService PATH_EXECUTOR = Executors.newCachedThreadPool(r -&gt; {</b>
+<b class="fc">&nbsp;        Thread t = new Thread(r);</b>
+<b class="fc">&nbsp;        t.setDaemon(true);</b>
+<b class="fc">&nbsp;        t.setName(&quot;path-exec-&quot;) ;</b>
+<b class="fc">&nbsp;        return t;</b>
+&nbsp;    });
+&nbsp;
+&nbsp;    public String[] dronesWithCooling(Boolean state, List&lt;Drone&gt; drones) {
+&nbsp;        // Filter by cooling capability and return matching IDs
+<b class="fc">&nbsp;        return drones.stream()</b>
+<b class="fc">&nbsp;                .filter(d -&gt; Objects.equals(d.getCooling(), state))</b>
+<b class="fc">&nbsp;                .map(Drone::getId)</b>
+<b class="fc">&nbsp;                .toArray(String[]::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Drone droneDetails(String id, List&lt;Drone&gt; drones) {
+&nbsp;        // Find a drone by id, then map to existing Drone shape
+<b class="fc">&nbsp;        return drones.stream()</b>
+<b class="fc">&nbsp;                .filter(d -&gt; id.equals(d.getId()))</b>
+<b class="fc">&nbsp;                .findFirst()</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Drone not found&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    //    &quot;maxCost&quot;: 13.5
+&nbsp;    public String[] queryAvailableDrones(List&lt;MedDispatchRecRequest&gt; req, List&lt;Drone&gt; drones,
+&nbsp;                                         List&lt;DroneForServicePoint&gt; dronesForServicePoints) {
+<b class="fc">&nbsp;        List&lt;Drone&gt; availableDrones = new ArrayList&lt;&gt;(drones);</b>
+&nbsp;
+<b class="pc">&nbsp;        if (req == null) {</b>
+<b class="nc">&nbsp;            return availableDrones.stream().map(Drone::getId).toArray(String[]::new);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Build a map of drone id -&gt; list of availability windows for fast lookup
+<b class="fc">&nbsp;        Map&lt;String, List&lt;DroneForServicePoint.Availability&gt;&gt; availabilityMap = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        for (DroneForServicePoint sp : dronesForServicePoints) {</b>
+<b class="fc">&nbsp;            for (DroneForServicePoint.DroneAvailability da : sp.getDrones()) {</b>
+<b class="fc">&nbsp;                List&lt;DroneForServicePoint.Availability&gt; list = availabilityMap.computeIfAbsent(da.getId(), k -&gt; new ArrayList&lt;&gt;());</b>
+<b class="fc">&nbsp;                list.addAll(Arrays.asList(da.getAvailability()));</b>
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for (MedDispatchRecRequest r : req) {</b>
+<b class="fc">&nbsp;            Double requiredCapacity = r.getRequirements().getCapacity();</b>
+<b class="fc">&nbsp;            boolean requiresCooling = r.getRequirements().isCooling();</b>
+<b class="fc">&nbsp;            boolean requiresHeating = r.getRequirements().isHeating();</b>
+<b class="fc">&nbsp;            LocalDate date = r.getDate();</b>
+<b class="fc">&nbsp;            LocalTime time = r.getTime();</b>
+&nbsp;            // Use a conservative lower-bound estimate for cost when maxCost is provided:
+&nbsp;            // minCostEstimate = costInitial + costFinal + costPerMove * distance(servicePoint, delivery)/step
+&nbsp;
+<b class="fc">&nbsp;            availableDrones = availableDrones.stream()</b>
+<b class="fc">&nbsp;                    .filter(d -&gt; {</b>
+<b class="fc">&nbsp;                        if (date == null &amp;&amp; time == null) return true; // no constraint</b>
+&nbsp;
+<b class="fc">&nbsp;                        List&lt;DroneForServicePoint.Availability&gt; avails = availabilityMap.getOrDefault(d.getId(), Collections.emptyList());</b>
+&nbsp;
+&nbsp;                        // If date provided, check day-of-week match; if time provided, also check the time window
+<b class="fc">&nbsp;                        if (date != null) {</b>
+<b class="fc">&nbsp;                            DayOfWeek dow = date.getDayOfWeek();</b>
+<b class="pc">&nbsp;                            return avails.stream().anyMatch(a -&gt; a.getDayOfWeek() == dow &amp;&amp;</b>
+<b class="pc">&nbsp;                                    (time == null || (!a.getFrom().isAfter(time) &amp;&amp; !a.getUntil().isBefore(time))));</b>
+&nbsp;                        } else { // date == null but time != null: accept any availability window that contains the time
+<b class="pc">&nbsp;                            return avails.stream().anyMatch(a -&gt; (!a.getFrom().isAfter(time) &amp;&amp; !a.getUntil().isBefore(time)));</b>
+&nbsp;                        }
+&nbsp;                    })
+&nbsp;                    // check cost BEFORE consuming capacity so we don&#39;t mutate drones that will be filtered out
+<b class="fc">&nbsp;                    .filter(d -&gt; {</b>
+<b class="fc">&nbsp;                        Double maxCost = r.getRequirements().getMaxCost();</b>
+<b class="fc">&nbsp;                        if (maxCost == null) return true;</b>
+&nbsp;
+<b class="fc">&nbsp;                        double costPerMove = d.getCostPerMove();</b>
+<b class="fc">&nbsp;                        double costInitial = d.getCostInitial();</b>
+<b class="fc">&nbsp;                        double costFinal = d.getCostFinal();</b>
+<b class="fc">&nbsp;                        int maxMoves = d.getMaxMoves();</b>
+&nbsp;
+&nbsp;                        // if drone cannot make any move, it can&#39;t serve a delivery that requires movement
+<b class="fc">&nbsp;                        if (maxMoves &lt; 1) return false;</b>
+&nbsp;
+<b class="fc">&nbsp;                        double minEstimate = costInitial + costFinal + costPerMove;</b>
+<b class="pc">&nbsp;                        return Double.compare(minEstimate, maxCost) &lt;= 0;</b>
+&nbsp;                    })
+<b class="fc">&nbsp;                    .filter(d -&gt; {</b>
+<b class="fc">&nbsp;                        Double cap = d.getCapacity();</b>
+&nbsp;
+<b class="pc">&nbsp;                        if (Double.compare(cap, requiredCapacity) &gt;= 0) {</b>
+<b class="fc">&nbsp;                            double newCap = cap - requiredCapacity;</b>
+<b class="fc">&nbsp;                            d.setCapacity(newCap);</b>
+<b class="fc">&nbsp;                            return true;</b>
+&nbsp;                        }
+<b class="nc">&nbsp;                        return false;</b>
+&nbsp;                    })
+<b class="fc">&nbsp;                    .filter(d -&gt; !requiresCooling || Boolean.TRUE.equals(d.getCooling()))</b>
+<b class="fc">&nbsp;                    .filter(d -&gt; !requiresHeating || Boolean.TRUE.equals(d.getHeating()))</b>
+<b class="fc">&nbsp;                    .toList();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;        return availableDrones.stream()</b>
+<b class="fc">&nbsp;                .map(Drone::getId)</b>
+<b class="fc">&nbsp;                .toArray(String[]::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] queryAsPath(String attributeName, String value, List&lt;Drone&gt; drones) {
+<b class="fc">&nbsp;        List&lt;String&gt; matched = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        for (Drone d : drones) {</b>
+<b class="fc">&nbsp;            Object attrVal = DynamicQueries.readProperty(d, attributeName);</b>
+<b class="fc">&nbsp;            if (DynamicQueries.attributeEquals(attrVal, value)) {</b>
+<b class="fc">&nbsp;                matched.add(d.getId());</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return matched.toArray(new String[0]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String[] query(List&lt;QueryRequest&gt; query, List&lt;Drone&gt; drones) {
+<b class="fc">&nbsp;        List&lt;Drone&gt; availableDrones = new ArrayList&lt;&gt;(drones);</b>
+<b class="fc">&nbsp;        List&lt;String&gt; droneIDs = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        for (QueryRequest q : query) {</b>
+<b class="fc">&nbsp;            Iterator&lt;Drone&gt; iterator = availableDrones.iterator();</b>
+<b class="fc">&nbsp;            while (iterator.hasNext()) {</b>
+<b class="fc">&nbsp;                Drone d = iterator.next();</b>
+<b class="fc">&nbsp;                Object attrVal = DynamicQueries.readProperty(d, q.getAttribute());</b>
+<b class="fc">&nbsp;                boolean match = false;</b>
+<b class="fc">&nbsp;                if (Objects.equals(q.getOperator(), &quot;=&quot;)) {</b>
+<b class="fc">&nbsp;                    match = DynamicQueries.attributeEquals(attrVal, q.getValue());</b>
+&nbsp;                }
+<b class="pc">&nbsp;                 else if (Objects.equals(q.getOperator(), &quot;!=&quot;)) {</b>
+<b class="nc">&nbsp;                    match = !DynamicQueries.attributeEquals(attrVal, q.getValue());</b>
+&nbsp;                }
+<b class="fc">&nbsp;                 else if (Objects.equals(q.getOperator(), &quot;&gt;&quot;)) {</b>
+<b class="fc">&nbsp;                    match = DynamicQueries.attributeGreaterThan(attrVal, q.getValue());</b>
+&nbsp;                }
+<b class="pc">&nbsp;                 else if (Objects.equals(q.getOperator(), &quot;&lt;&quot;)) {</b>
+<b class="fc">&nbsp;                    match = DynamicQueries.attributeLessThan(attrVal, q.getValue());</b>
+&nbsp;                }
+<b class="fc">&nbsp;                 if (match) {</b>
+<b class="fc">&nbsp;                    droneIDs.add(d.getId());</b>
+<b class="fc">&nbsp;                    iterator.remove();</b>
+&nbsp;                 }
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return droneIDs.toArray(new String[0]);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public CalculatedDeliveryPathRequest calcDeliveryPath(List&lt;MedDispatchRecRequest&gt; req, List&lt;Drone&gt; drones,
+&nbsp;                                                          List&lt;DroneServicePoint&gt; servicePoints,
+&nbsp;                                                          List&lt;RestrictedArea&gt; restrictedAreas, String[] droneIDs,
+&nbsp;                                                          List&lt;DroneForServicePoint&gt; dronesForServicePoints) {
+&nbsp;
+&nbsp;        // lightweight instrumentation: request correlation + end-to-end timing
+<b class="fc">&nbsp;        final String requestId = UUID.randomUUID().toString();</b>
+<b class="fc">&nbsp;        final long startNs = System.nanoTime();</b>
+&nbsp;
+&nbsp;        // counters for diagnosing path planning behaviour
+<b class="fc">&nbsp;        final int[] legsPlanned = {0};</b>
+<b class="fc">&nbsp;        final int[] legsFailed = {0};</b>
+<b class="fc">&nbsp;        final int[] aStarInvocations = {0};</b>
+<b class="fc">&nbsp;        final int[] straightLineFallbacks = {0};</b>
+<b class="fc">&nbsp;        String reasonCode = null;</b>
+&nbsp;
+<b class="fc">&nbsp;        logger.info(&quot;calcDeliveryPath called: requestId={}, reqSize={}, dronesSize={}, servicePointsSize={}, dronesForServicePointsSize={}, restrictedAreasSize={}, droneIDs={}&quot;,</b>
+&nbsp;                requestId,
+<b class="pc">&nbsp;                req == null ? 0 : req.size(),</b>
+<b class="pc">&nbsp;                drones == null ? 0 : drones.size(),</b>
+<b class="pc">&nbsp;                servicePoints == null ? 0 : servicePoints.size(),</b>
+<b class="pc">&nbsp;                dronesForServicePoints == null ? 0 : dronesForServicePoints.size(),</b>
+<b class="pc">&nbsp;                restrictedAreas == null ? 0 : restrictedAreas.size(),</b>
+<b class="pc">&nbsp;                droneIDs == null ? &quot;[]&quot; : Arrays.toString(droneIDs));</b>
+&nbsp;
+&nbsp;        // In case no available drones, return the empty response
+<b class="pc">&nbsp;        if (droneIDs == null || droneIDs.length == 0) {</b>
+<b class="fc">&nbsp;            long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);</b>
+<b class="fc">&nbsp;            PlanningDiagnostics diag = PlanningDiagnostics.builder()</b>
+<b class="fc">&nbsp;                    .requestId(requestId)</b>
+<b class="fc">&nbsp;                    .durationMs(durationMs)</b>
+<b class="fc">&nbsp;                    .reasonCode(&quot;NO_AVAILABLE_DRONES&quot;)</b>
+<b class="fc">&nbsp;                    .legsPlanned(0)</b>
+<b class="fc">&nbsp;                    .legsFailed(0)</b>
+<b class="fc">&nbsp;                    .aStarInvocations(0)</b>
+<b class="fc">&nbsp;                    .straightLineFallbacks(0)</b>
+<b class="fc">&nbsp;                    .build();</b>
+<b class="fc">&nbsp;            return CalculatedDeliveryPathRequest.builder().totalCost(0.0).totalMoves(0).dronePaths(new DronePaths[0]).diagnostics(diag).build();</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Map drone id -&gt; Drone entity for cost lookups
+<b class="fc">&nbsp;        Map&lt;String, Drone&gt; droneById = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        for (Drone d : drones) droneById.put(d.getId(), d);</b>
+&nbsp;
+&nbsp;        // Evenly distribute requests to drone IDs
+<b class="fc">&nbsp;        Map&lt;String, List&lt;MedDispatchRecRequest&gt;&gt; assignments = new LinkedHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        for (String id : droneIDs) assignments.put(id, new ArrayList&lt;&gt;());</b>
+&nbsp;
+<b class="fc">&nbsp;        int idx = 0;</b>
+<b class="pc">&nbsp;        if (req == null || req.isEmpty()) {return CalculatedDeliveryPathRequest.builder().build();}</b>
+<b class="fc">&nbsp;        for (MedDispatchRecRequest m : req) {</b>
+<b class="fc">&nbsp;            String assigned = droneIDs[idx % droneIDs.length];</b>
+<b class="fc">&nbsp;            assignments.get(assigned).add(m);</b>
+<b class="fc">&nbsp;            idx++;</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // log assignments for diagnostics
+<b class="fc">&nbsp;        logger.info(&quot;Assignments built: {}&quot;, assignments.entrySet().stream().map(e -&gt; e.getKey() + &quot;-&gt;&quot; + e.getValue().size()).toList());</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;String, DroneServicePoint&gt; droneHomeById = new HashMap&lt;&gt;();</b>
+<b class="pc">&nbsp;        if (dronesForServicePoints != null &amp;&amp; servicePoints != null) {</b>
+<b class="fc">&nbsp;            for (DroneForServicePoint dfsp : dronesForServicePoints) {</b>
+&nbsp;                // find the matching service point (dfsp.servicePointId -&gt; DroneServicePoint.getId())
+<b class="fc">&nbsp;                Integer spId = dfsp.getServicePointId();</b>
+<b class="fc">&nbsp;                DroneServicePoint matched = null;</b>
+<b class="pc">&nbsp;                if (spId != null) {</b>
+<b class="pc">&nbsp;                    for (DroneServicePoint sp : servicePoints) {</b>
+<b class="pc">&nbsp;                        if (sp != null &amp;&amp; Objects.equals(sp.getId(), spId)) {</b>
+<b class="fc">&nbsp;                            matched = sp;</b>
+&nbsp;                            break;
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                // map every drone availability entry&#39;s id to the matched service point
+<b class="pc">&nbsp;                if (dfsp.getDrones() != null) {</b>
+<b class="fc">&nbsp;                    for (DroneForServicePoint.DroneAvailability da : dfsp.getDrones()) {</b>
+<b class="pc">&nbsp;                        if (da != null &amp;&amp; da.getId() != null &amp;&amp; matched != null) {</b>
+<b class="fc">&nbsp;                            droneHomeById.put(da.getId(), matched);</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        // log droneHomeById for diagnostics
+<b class="pc">&nbsp;        logger.info(&quot;droneHomeById mapping: {}&quot;, droneHomeById.entrySet().stream().map(e -&gt; e.getKey() + &quot;-&gt;&quot; + (e.getValue()==null?&quot;null&quot;:e.getValue().getId())).toList());</b>
+&nbsp;
+&nbsp;        // log servicePoints for diagnostics
+<b class="fc">&nbsp;        logger.info(&quot;servicePoints: {}&quot;, servicePoints.stream().map(sp -&gt; {</b>
+<b class="pc">&nbsp;            if (sp == null) return &quot;null&quot;;</b>
+<b class="pc">&nbsp;            if (sp.getLocation() == null) return sp.getId() + &quot;-&gt;location=null&quot;;</b>
+<b class="fc">&nbsp;            LngLat l = sp.getLocation();</b>
+<b class="fc">&nbsp;            return sp.getId() + &quot;-&gt;(&quot; + l.getLng() + &quot;,&quot; + l.getLat() + &quot;)&quot;;</b>
+<b class="fc">&nbsp;        }).toList());</b>
+&nbsp;
+&nbsp;        // log dronesForServicePoints for diagnostics
+<b class="fc">&nbsp;        logger.info(&quot;dronesForServicePoints count: {}&quot;, dronesForServicePoints.size());</b>
+&nbsp;
+<b class="fc">&nbsp;        int totalMoves = 0;</b>
+<b class="fc">&nbsp;        double totalCost = 0.0;</b>
+<b class="fc">&nbsp;        List&lt;DronePaths&gt; dronePaths = new ArrayList&lt;&gt;();</b>
+&nbsp;
+&nbsp;        // For each drone, build sequential flightPaths
+<b class="fc">&nbsp;        for (String droneId : assignments.keySet()) {</b>
+<b class="fc">&nbsp;            List&lt;MedDispatchRecRequest&gt; deliveries = assignments.get(droneId);</b>
+<b class="pc">&nbsp;            if (deliveries == null || deliveries.isEmpty()) {</b>
+<b class="nc">&nbsp;                logger.info(&quot;No deliveries assigned to drone {} (requestId={}) (skipping)&quot;, droneId, requestId);</b>
+&nbsp;                continue;
+&nbsp;
+&nbsp;            }
+&nbsp;
+&nbsp;            // Determine service point origin for this drone: prefer mapped home, otherwise nearest to first delivery
+<b class="fc">&nbsp;            DroneServicePoint originSp = null;</b>
+<b class="pc">&nbsp;            if (droneHomeById.containsKey(droneId)) {</b>
+<b class="fc">&nbsp;                originSp = droneHomeById.get(droneId);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            LngLat firstDeliveryPos = null;</b>
+<b class="pc">&nbsp;            if (!deliveries.isEmpty() &amp;&amp; deliveries.getFirst() != null) {</b>
+<b class="fc">&nbsp;                firstDeliveryPos = deliveries.getFirst().getDelivery();</b>
+&nbsp;
+&nbsp;            }
+&nbsp;
+&nbsp;            // If no origin service point was found, but we have a valid first delivery position, use it as fallback origin.
+<b class="pc">&nbsp;            if (originSp == null &amp;&amp; firstDeliveryPos != null) {</b>
+<b class="nc">&nbsp;                originSp = DroneServicePoint.builder()</b>
+<b class="nc">&nbsp;                        .id(-1)</b>
+<b class="nc">&nbsp;                        .name(&quot;fallback-origin&quot;)</b>
+<b class="nc">&nbsp;                        .location(firstDeliveryPos)</b>
+<b class="nc">&nbsp;                        .build();</b>
+<b class="nc">&nbsp;                logger.info(&quot;Drone {}: no service point origin found; using firstDeliveryPos as fallback origin&quot;, droneId);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // log chosen origin for this drone
+<b class="fc">&nbsp;            logger.info(&quot;Drone {}: chosen originSp id={} (location={})&quot;, droneId,</b>
+<b class="pc">&nbsp;                    originSp == null ? &quot;null&quot; : String.valueOf(originSp.getId()),</b>
+<b class="pc">&nbsp;                    originSp == null || originSp.getLocation() == null ? &quot;null&quot; : (originSp.getLocation().getLng() + &quot;,&quot; + originSp.getLocation().getLat()));</b>
+&nbsp;
+<b class="fc">&nbsp;            List&lt;Deliveries&gt; droneDeliveries = new ArrayList&lt;&gt;();</b>
+&nbsp;
+&nbsp;            // build segments of the total flight path
+<b class="fc">&nbsp;            for (int i = 0; i &lt; deliveries.size(); i++) {</b>
+<b class="fc">&nbsp;                MedDispatchRecRequest curr = deliveries.get(i);</b>
+&nbsp;                LngLat start;
+&nbsp;                LngLat end;
+&nbsp;                List&lt;LngLat&gt; seg;
+&nbsp;
+<b class="fc">&nbsp;                if (i == deliveries.size() - 1) {</b>
+&nbsp;                    // last delivery: start at the previous delivery (or origin if only one), go to last delivery then return to origin
+<b class="fc">&nbsp;                    if (deliveries.size() == 1) {</b>
+&nbsp;                        // single delivery: split outbound and return into two Deliveries
+<b class="fc">&nbsp;                        start = originSp.getLocation();</b>
+<b class="fc">&nbsp;                        end = curr.getDelivery();</b>
+<b class="fc">&nbsp;                        legsPlanned[0]++;</b>
+<b class="fc">&nbsp;                        List&lt;LngLat&gt; firstLeg = new ArrayList&lt;&gt;(safeFindPath(start, end, restrictedAreas, requestId, aStarInvocations, straightLineFallbacks, legsFailed));</b>
+<b class="fc">&nbsp;                        logger.info(&quot;Drone {}: firstLeg size from findPath(start={}, end={}) = {} (requestId={})&quot;, droneId, start, end, firstLeg.size(), requestId);</b>
+&nbsp;
+&nbsp;                        // hover at end -&gt; duplicate last point on outbound leg
+<b class="pc">&nbsp;                        if (!firstLeg.isEmpty()) {</b>
+<b class="fc">&nbsp;                            LngLat last = firstLeg.getLast();</b>
+<b class="fc">&nbsp;                            firstLeg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        legsPlanned[0]++;</b>
+<b class="fc">&nbsp;                        List&lt;LngLat&gt; returnLeg = new ArrayList&lt;&gt;(safeFindPath(end, originSp.getLocation(), restrictedAreas, requestId, aStarInvocations, straightLineFallbacks, legsFailed));</b>
+<b class="fc">&nbsp;                        logger.info(&quot;Drone {}: returnLeg size from findPath(end={}, origin={}) = {} (requestId={})&quot;, droneId, end, originSp.getLocation(), returnLeg.size(), requestId);</b>
+&nbsp;
+&nbsp;                        // compute moves and cost for outbound leg
+<b class="fc">&nbsp;                        int movesOut = Math.max(0, firstLeg.size() - 1);</b>
+<b class="fc">&nbsp;                        totalMoves += movesOut;</b>
+<b class="fc">&nbsp;                        Drone assignedDroneOut = droneById.get(droneId);</b>
+<b class="fc">&nbsp;                        double costOut = 0.0;</b>
+<b class="pc">&nbsp;                        if (assignedDroneOut != null) {</b>
+<b class="fc">&nbsp;                            double costPerMove = assignedDroneOut.getCostPerMove();</b>
+<b class="fc">&nbsp;                            double costInitial = assignedDroneOut.getCostInitial();</b>
+<b class="fc">&nbsp;                            double costFinal = assignedDroneOut.getCostFinal();</b>
+<b class="fc">&nbsp;                            costOut = costInitial + costFinal + costPerMove * movesOut;</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                        totalCost += costOut;</b>
+&nbsp;
+<b class="fc">&nbsp;                        Deliveries delOut = Deliveries.builder()</b>
+<b class="fc">&nbsp;                                .deliveryId(curr.getId())</b>
+<b class="fc">&nbsp;                                .flightPath(firstLeg.toArray(new LngLat[0]))</b>
+<b class="fc">&nbsp;                                .build();</b>
+<b class="fc">&nbsp;                        droneDeliveries.add(delOut);</b>
+&nbsp;
+&nbsp;                        // compute moves and cost for return leg (as a separate delivery with null id)
+<b class="fc">&nbsp;                        int movesRet = Math.max(0, returnLeg.size() - 1);</b>
+<b class="fc">&nbsp;                        totalMoves += movesRet;</b>
+<b class="fc">&nbsp;                        double costRet = 0.0;</b>
+<b class="pc">&nbsp;                        if (assignedDroneOut != null) {</b>
+<b class="fc">&nbsp;                            double costPerMove = assignedDroneOut.getCostPerMove();</b>
+<b class="fc">&nbsp;                            double costInitial = assignedDroneOut.getCostInitial();</b>
+<b class="fc">&nbsp;                            double costFinal = assignedDroneOut.getCostFinal();</b>
+<b class="fc">&nbsp;                            costRet = costInitial + costFinal + costPerMove * movesRet;</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                        totalCost += costRet;</b>
+&nbsp;
+<b class="fc">&nbsp;                        Deliveries delRet = Deliveries.builder()</b>
+<b class="fc">&nbsp;                                .deliveryId(null)</b>
+<b class="fc">&nbsp;                                .flightPath(returnLeg.toArray(new LngLat[0]))</b>
+<b class="fc">&nbsp;                                .build();</b>
+<b class="fc">&nbsp;                        droneDeliveries.add(delRet);</b>
+&nbsp;
+&nbsp;                        // done with this (and only) delivery
+&nbsp;                    } else {
+&nbsp;                        // multiple deliveries: last delivery is outbound then return concatenated into one segment
+<b class="fc">&nbsp;                        start = deliveries.get(i - 1).getDelivery();</b>
+<b class="fc">&nbsp;                        end = curr.getDelivery();</b>
+&nbsp;
+<b class="fc">&nbsp;                        legsPlanned[0]++;</b>
+<b class="fc">&nbsp;                        List&lt;LngLat&gt; firstLeg = new ArrayList&lt;&gt;(safeFindPath(start, end, restrictedAreas, requestId, aStarInvocations, straightLineFallbacks, legsFailed));</b>
+<b class="fc">&nbsp;                        logger.info(&quot;Drone {}: firstLeg size (multi) from findPath(start={}, end={}) = {} (requestId={})&quot;, droneId, start, end, firstLeg.size(), requestId);</b>
+&nbsp;                        // hover at end -&gt; duplicate last point on outbound leg
+<b class="pc">&nbsp;                        if (!firstLeg.isEmpty()) {</b>
+<b class="fc">&nbsp;                            LngLat last = firstLeg.getLast();</b>
+<b class="fc">&nbsp;                            firstLeg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());</b>
+&nbsp;                        }
+&nbsp;
+<b class="fc">&nbsp;                        legsPlanned[0]++;</b>
+<b class="fc">&nbsp;                        List&lt;LngLat&gt; returnLeg = new ArrayList&lt;&gt;(safeFindPath(end, originSp.getLocation(), restrictedAreas, requestId, aStarInvocations, straightLineFallbacks, legsFailed));</b>
+<b class="fc">&nbsp;                        logger.info(&quot;Drone {}: returnLeg size (multi) from findPath(end={}, origin={}) = {} (requestId={})&quot;, droneId, end, originSp.getLocation(), returnLeg.size(), requestId);</b>
+&nbsp;
+&nbsp;                        // compute moves and cost for this delivery (concatenated round-trip)
+<b class="fc">&nbsp;                        int moves = Math.max(0, firstLeg.size() - 1);</b>
+<b class="fc">&nbsp;                        totalMoves += moves;</b>
+&nbsp;
+<b class="fc">&nbsp;                        Drone assignedDrone = droneById.get(droneId);</b>
+<b class="fc">&nbsp;                        double cost = 0.0;</b>
+<b class="pc">&nbsp;                        if (assignedDrone != null) {</b>
+<b class="fc">&nbsp;                            double costPerMove = assignedDrone.getCostPerMove();</b>
+<b class="fc">&nbsp;                            double costInitial = assignedDrone.getCostInitial();</b>
+<b class="fc">&nbsp;                            double costFinal = assignedDrone.getCostFinal();</b>
+<b class="fc">&nbsp;                            cost = costInitial + costFinal + costPerMove * moves;</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                        totalCost += cost;</b>
+&nbsp;
+<b class="fc">&nbsp;                        Deliveries del = Deliveries.builder()</b>
+<b class="fc">&nbsp;                                .deliveryId(curr.getId())</b>
+<b class="fc">&nbsp;                                .flightPath(firstLeg.toArray(new LngLat[0]))</b>
+<b class="fc">&nbsp;                                .build();</b>
+<b class="fc">&nbsp;                        droneDeliveries.add(del);</b>
+&nbsp;
+&nbsp;                        // compute moves and cost for return leg (as a separate delivery with null id)
+<b class="fc">&nbsp;                        int movesRet = Math.max(0, returnLeg.size() - 1);</b>
+<b class="fc">&nbsp;                        totalMoves += movesRet;</b>
+<b class="fc">&nbsp;                        double costRet = 0.0;</b>
+<b class="pc">&nbsp;                        if (assignedDrone != null) {</b>
+<b class="fc">&nbsp;                            double costPerMove = assignedDrone.getCostPerMove();</b>
+<b class="fc">&nbsp;                            double costInitial = assignedDrone.getCostInitial();</b>
+<b class="fc">&nbsp;                            double costFinal = assignedDrone.getCostFinal();</b>
+<b class="fc">&nbsp;                            costRet = costInitial + costFinal + costPerMove * movesRet;</b>
+&nbsp;                        }
+<b class="fc">&nbsp;                        totalCost += costRet;</b>
+&nbsp;
+<b class="fc">&nbsp;                        Deliveries delRet = Deliveries.builder()</b>
+<b class="fc">&nbsp;                                .deliveryId(null)</b>
+<b class="fc">&nbsp;                                .flightPath(returnLeg.toArray(new LngLat[0]))</b>
+<b class="fc">&nbsp;                                .build();</b>
+<b class="fc">&nbsp;                        droneDeliveries.add(delRet);</b>
+&nbsp;                    }
+&nbsp;                    continue;
+<b class="pc">&nbsp;                } else if (i == 0) {</b>
+&nbsp;                    // start at service point, go to the first delivery
+<b class="pc">&nbsp;                    assert originSp != null;</b>
+<b class="fc">&nbsp;                    start = originSp.getLocation();</b>
+<b class="fc">&nbsp;                    end = curr.getDelivery();</b>
+<b class="fc">&nbsp;                    legsPlanned[0]++;</b>
+<b class="fc">&nbsp;                    seg = new ArrayList&lt;&gt;(safeFindPath(start, end, restrictedAreas, requestId, aStarInvocations, straightLineFallbacks, legsFailed));</b>
+<b class="fc">&nbsp;                    logger.info(&quot;Drone {}: seg size (i==0) from findPath(start={}, end={}) = {} (requestId={})&quot;, droneId, start, end, seg.size(), requestId);</b>
+&nbsp;
+&nbsp;                    // hover at end -&gt; duplicate last point
+<b class="pc">&nbsp;                    if (!seg.isEmpty()) {</b>
+<b class="fc">&nbsp;                        LngLat last = seg.getLast();</b>
+<b class="fc">&nbsp;                        seg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());</b>
+&nbsp;                    }
+&nbsp;                } else {
+&nbsp;                    // middle deliveries: start at the previous delivery, go to this delivery
+<b class="nc">&nbsp;                    start = deliveries.get(i - 1).getDelivery();</b>
+<b class="nc">&nbsp;                    end = curr.getDelivery();</b>
+<b class="nc">&nbsp;                    legsPlanned[0]++;</b>
+<b class="nc">&nbsp;                    seg = new ArrayList&lt;&gt;(safeFindPath(start, end, restrictedAreas, requestId, aStarInvocations, straightLineFallbacks, legsFailed));</b>
+<b class="nc">&nbsp;                    logger.info(&quot;Drone {}: seg size (middle) from findPath(start={}, end={}) = {} (requestId={})&quot;, droneId, start, end, seg.size(), requestId);</b>
+&nbsp;
+&nbsp;                    // hover at end -&gt; duplicate last point
+<b class="nc">&nbsp;                    if (!seg.isEmpty()) {</b>
+<b class="nc">&nbsp;                        LngLat last = seg.getLast();</b>
+<b class="nc">&nbsp;                        seg.add(LngLat.builder().lng(last.getLng()).lat(last.getLat()).build());</b>
+&nbsp;                    }
+&nbsp;                }
+&nbsp;
+&nbsp;                // compute moves and cost for this delivery
+<b class="fc">&nbsp;                int moves = Math.max(0, seg.size() - 1);</b>
+<b class="fc">&nbsp;                totalMoves += moves;</b>
+&nbsp;
+<b class="fc">&nbsp;                Drone assignedDrone = droneById.get(droneId);</b>
+<b class="fc">&nbsp;                double cost = 0.0;</b>
+<b class="pc">&nbsp;                if (assignedDrone != null) {</b>
+<b class="fc">&nbsp;                    double costPerMove = assignedDrone.getCostPerMove();</b>
+<b class="fc">&nbsp;                    double costInitial = assignedDrone.getCostInitial();</b>
+<b class="fc">&nbsp;                    double costFinal = assignedDrone.getCostFinal();</b>
+<b class="fc">&nbsp;                    cost = costInitial + costFinal + costPerMove * moves;</b>
+&nbsp;                }
+<b class="fc">&nbsp;                totalCost += cost;</b>
+&nbsp;
+<b class="fc">&nbsp;                Deliveries del = Deliveries.builder()</b>
+<b class="fc">&nbsp;                        .deliveryId(curr.getId())</b>
+<b class="fc">&nbsp;                        .flightPath(seg.toArray(new LngLat[0]))</b>
+<b class="fc">&nbsp;                        .build();</b>
+<b class="fc">&nbsp;                droneDeliveries.add(del);</b>
+&nbsp;            }
+&nbsp;
+&nbsp;            // build DronePaths for this drone
+<b class="pc">&nbsp;            if (droneDeliveries.isEmpty()) {</b>
+<b class="nc">&nbsp;                logger.info(&quot;Drone {} produced no droneDeliveries (skipping)&quot;, droneId);</b>
+&nbsp;                continue;
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            DronePaths dp = DronePaths.builder()</b>
+<b class="fc">&nbsp;                    .droneId(Integer.valueOf(droneId))</b>
+<b class="fc">&nbsp;                    .deliveries(droneDeliveries.toArray(new Deliveries[0]))</b>
+<b class="fc">&nbsp;                    .build();</b>
+<b class="fc">&nbsp;            dronePaths.add(dp);</b>
+<b class="fc">&nbsp;            logger.info(&quot;Added DronePaths for drone {} with {} deliveries (this includes return home)&quot;, droneId, droneDeliveries.size());</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);</b>
+<b class="pc">&nbsp;        if (reasonCode == null) {</b>
+<b class="pc">&nbsp;            reasonCode = (legsFailed[0] &gt; 0) ? &quot;PLANNED_WITH_WARNINGS&quot; : &quot;OK&quot;;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        logger.info(&quot;calcDeliveryPath finished: requestId={}, durationMs={}, totalMoves={}, totalCost={}, dronePathsCount={}, legsPlanned={}, legsFailed={}, aStarInvocations={}, straightLineFallbacks={}&quot;,</b>
+<b class="fc">&nbsp;                requestId, durationMs, totalMoves, totalCost, dronePaths.size(), legsPlanned[0], legsFailed[0], aStarInvocations[0], straightLineFallbacks[0]);</b>
+&nbsp;
+<b class="fc">&nbsp;        PlanningDiagnostics diag = PlanningDiagnostics.builder()</b>
+<b class="fc">&nbsp;                .requestId(requestId)</b>
+<b class="fc">&nbsp;                .durationMs(durationMs)</b>
+<b class="fc">&nbsp;                .reasonCode(reasonCode)</b>
+<b class="fc">&nbsp;                .legsPlanned(legsPlanned[0])</b>
+<b class="fc">&nbsp;                .legsFailed(legsFailed[0])</b>
+<b class="fc">&nbsp;                .aStarInvocations(aStarInvocations[0])</b>
+<b class="fc">&nbsp;                .straightLineFallbacks(straightLineFallbacks[0])</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;
+<b class="fc">&nbsp;        return CalculatedDeliveryPathRequest.builder()</b>
+<b class="fc">&nbsp;                .totalCost(totalCost)</b>
+<b class="fc">&nbsp;                .totalMoves(totalMoves)</b>
+<b class="fc">&nbsp;                .dronePaths(dronePaths.toArray(new DronePaths[0]))</b>
+<b class="fc">&nbsp;                .diagnostics(diag)</b>
+<b class="fc">&nbsp;                .build();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public ObjectNode buildGeoJsonObject(CalculatedDeliveryPathRequest calc) {
+<b class="fc">&nbsp;        ObjectMapper mapper = new ObjectMapper();</b>
+<b class="fc">&nbsp;        ObjectNode root = mapper.createObjectNode();</b>
+<b class="fc">&nbsp;        root.put(&quot;type&quot;, &quot;FeatureCollection&quot;);</b>
+<b class="fc">&nbsp;        ArrayNode features = mapper.createArrayNode();</b>
+&nbsp;
+<b class="pc">&nbsp;        if (calc == null || calc.getDronePaths() == null || calc.getDronePaths().length == 0) {</b>
+<b class="fc">&nbsp;            root.set(&quot;features&quot;, features);</b>
+<b class="fc">&nbsp;            return root;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        for (DronePaths dp : calc.getDronePaths()) {</b>
+<b class="pc">&nbsp;            if (dp == null || dp.getDeliveries() == null) continue;</b>
+<b class="fc">&nbsp;            ObjectNode feat = mapper.createObjectNode();</b>
+<b class="fc">&nbsp;            feat.put(&quot;type&quot;, &quot;Feature&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;            ObjectNode geometry = mapper.createObjectNode();</b>
+<b class="fc">&nbsp;            geometry.put(&quot;type&quot;, &quot;LineString&quot;);</b>
+<b class="fc">&nbsp;            ArrayNode coords = mapper.createArrayNode();</b>
+&nbsp;
+<b class="fc">&nbsp;            ArrayNode deliveryIds = mapper.createArrayNode();</b>
+<b class="fc">&nbsp;            double totalDistance = 0.0;</b>
+<b class="fc">&nbsp;            int totalMoves = 0;</b>
+&nbsp;
+<b class="fc">&nbsp;            List&lt;LngLat&gt; allPoints = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;            for (Deliveries d : dp.getDeliveries()) {</b>
+<b class="fc">&nbsp;                deliveryIds.add(String.valueOf(d.getDeliveryId()));</b>
+<b class="fc">&nbsp;                LngLat[] path = d.getFlightPath();</b>
+<b class="fc">&nbsp;                Collections.addAll(allPoints, path);</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            for (int i = 0; i &lt; allPoints.size(); i++) {</b>
+<b class="fc">&nbsp;                LngLat p = allPoints.get(i);</b>
+<b class="fc">&nbsp;                ArrayNode coord = mapper.createArrayNode();</b>
+<b class="fc">&nbsp;                coord.add(p.getLng());</b>
+<b class="fc">&nbsp;                coord.add(p.getLat());</b>
+<b class="fc">&nbsp;                coords.add(coord);</b>
+<b class="fc">&nbsp;                if (i &gt; 0) {</b>
+<b class="fc">&nbsp;                    LngLat prev = allPoints.get(i - 1);</b>
+<b class="fc">&nbsp;                    totalDistance += Distance.calculateEuclideanDistance(prev, p);</b>
+<b class="fc">&nbsp;                    totalMoves += 1;</b>
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            geometry.set(&quot;coordinates&quot;, coords);</b>
+<b class="fc">&nbsp;            feat.set(&quot;geometry&quot;, geometry);</b>
+&nbsp;
+<b class="fc">&nbsp;            ObjectNode props = mapper.createObjectNode();</b>
+<b class="fc">&nbsp;            props.put(&quot;droneId&quot;, String.valueOf(dp.getDroneId()));</b>
+<b class="fc">&nbsp;            props.put(&quot;totalDistance&quot;, totalDistance);</b>
+<b class="fc">&nbsp;            props.put(&quot;totalMoves&quot;, totalMoves);</b>
+&nbsp;
+<b class="pc">&nbsp;            if (calc.getDronePaths().length == 1) {</b>
+<b class="fc">&nbsp;                props.put(&quot;totalMoves&quot;, calc.getTotalMoves());</b>
+<b class="fc">&nbsp;                props.put(&quot;totalCost&quot;, calc.getTotalCost());</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            props.set(&quot;deliveryIds&quot;, deliveryIds);</b>
+<b class="fc">&nbsp;            feat.set(&quot;properties&quot;, props);</b>
+&nbsp;
+<b class="fc">&nbsp;            features.add(feat);</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        root.set(&quot;features&quot;, features);</b>
+<b class="fc">&nbsp;        return root;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // Wrapper that runs pathfinding off-thread with a timeout to avoid blocking the request thread.
+&nbsp;    private List&lt;LngLat&gt; safeFindPath(LngLat start,
+&nbsp;                                     LngLat goal,
+&nbsp;                                     List&lt;RestrictedArea&gt; restrictedAreas,
+&nbsp;                                     String requestId,
+&nbsp;                                     int[] aStarInvocations,
+&nbsp;                                     int[] straightLineFallbacks,
+&nbsp;                                     int[] legsFailed) {
+<b class="pc">&nbsp;        if (start == null || goal == null) {</b>
+<b class="nc">&nbsp;            legsFailed[0]++;</b>
+<b class="nc">&nbsp;            logger.warn(&quot;safeFindPath: null start/goal (requestId={}) start={} goal={}&quot;, requestId, start, goal);</b>
+<b class="nc">&nbsp;            return List.of();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        aStarInvocations[0]++;</b>
+<b class="fc">&nbsp;        Callable&lt;List&lt;LngLat&gt;&gt; task = () -&gt; FlightPathAlgorithm.findPath(start, goal, restrictedAreas);</b>
+<b class="fc">&nbsp;        Future&lt;List&lt;LngLat&gt;&gt; fut = PATH_EXECUTOR.submit(task);</b>
+&nbsp;        try {
+&nbsp;            // 180s timeout per leg (allow longer A* runs but still bounded)
+<b class="fc">&nbsp;            return fut.get(180, TimeUnit.SECONDS);</b>
+&nbsp;        } catch (TimeoutException te) {
+<b class="nc">&nbsp;            straightLineFallbacks[0]++;</b>
+<b class="nc">&nbsp;            legsFailed[0]++;</b>
+<b class="nc">&nbsp;            logger.warn(&quot;safeFindPath timeout between {} and {} (requestId={}) - using straight-line fallback&quot;, start, goal, requestId);</b>
+<b class="nc">&nbsp;            fut.cancel(true);</b>
+<b class="nc">&nbsp;            return FlightPathAlgorithm.getStraightlinePath(start, goal, Math.max(1, (int) (Distance.calculateEuclideanDistance(start, goal) / 1.5E-4)));</b>
+&nbsp;        } catch (InterruptedException ie) {
+<b class="nc">&nbsp;            straightLineFallbacks[0]++;</b>
+<b class="nc">&nbsp;            legsFailed[0]++;</b>
+<b class="nc">&nbsp;            Thread.currentThread().interrupt();</b>
+<b class="nc">&nbsp;            logger.warn(&quot;safeFindPath interrupted between {} and {} (requestId={}) - using straight-line fallback&quot;, start, goal, requestId);</b>
+<b class="nc">&nbsp;            return FlightPathAlgorithm.getStraightlinePath(start, goal, Math.max(1, (int) (Distance.calculateEuclideanDistance(start, goal) / 1.5E-4)));</b>
+&nbsp;        } catch (ExecutionException ee) {
+<b class="nc">&nbsp;            straightLineFallbacks[0]++;</b>
+<b class="nc">&nbsp;            legsFailed[0]++;</b>
+<b class="nc">&nbsp;            logger.warn(&quot;safeFindPath execution error between {} and {} (requestId={}): {} - using straight-line fallback&quot;, start, goal, requestId, ee.toString());</b>
+<b class="nc">&nbsp;            return FlightPathAlgorithm.getStraightlinePath(start, goal, Math.max(1, (int) (Distance.calculateEuclideanDistance(start, goal) / 1.5E-4)));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-26 21:17</div>
+</div>
+</body>
+</html>

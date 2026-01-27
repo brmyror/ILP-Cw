@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > IlpRestServiceConfig</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">uk.ac.ed.acp.cw2.configuration</a>
+</div>
+
+<h1>Coverage Summary for Class: IlpRestServiceConfig (uk.ac.ed.acp.cw2.configuration)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IlpRestServiceConfig</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (4/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">IlpRestServiceConfig$$SpringCGLIB$$0</td>
+  </tr>
+  <tr>
+    <td class="name">IlpRestServiceConfig$$SpringCGLIB$$FastClass$$0</td>
+  </tr>
+  <tr>
+    <td class="name">IlpRestServiceConfig$$SpringCGLIB$$FastClass$$1</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33.3%
+  </span>
+  <span class="absValue">
+    (4/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    58.3%
+  </span>
+  <span class="absValue">
+    (7/12)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package uk.ac.ed.acp.cw2.configuration;
+&nbsp;
+&nbsp;import org.springframework.context.annotation.Bean;
+&nbsp;import org.springframework.context.annotation.Configuration;
+&nbsp;import org.springframework.core.env.Environment;
+&nbsp;import org.springframework.web.client.RestTemplate;
+&nbsp;
+&nbsp;@Configuration
+<b class="fc">&nbsp;public class IlpRestServiceConfig {</b>
+&nbsp;
+&nbsp;    // Default ILP endpoint to use when no property or env var is set.
+&nbsp;    private static final String DEFAULT_ILP_ENDPOINT = &quot;https://ilp-rest-2025-bvh6e9hschfagrgy.ukwest-01.azurewebsites.net&quot;;
+&nbsp;
+&nbsp;    // Expose the resolved ILP endpoint as a bean so other components can inject it.
+&nbsp;    @Bean(name = &quot;ilpEndpoint&quot;)
+&nbsp;    public String ilpEndpoint(Environment env) {
+&nbsp;        // Prefer explicit Spring property first (allows overriding via application.yml/properties)
+<b class="fc">&nbsp;        String url = env.getProperty(&quot;ilp.service.url&quot;);</b>
+<b class="pc">&nbsp;        if (url != null &amp;&amp; !url.isBlank()) {</b>
+<b class="fc">&nbsp;            return normalize(url);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Then check environment variable ILP_ENDPOINT
+<b class="nc">&nbsp;        url = System.getenv(&quot;ILP_ENDPOINT&quot;);</b>
+<b class="nc">&nbsp;        if (url != null &amp;&amp; !url.isBlank()) {</b>
+<b class="nc">&nbsp;            return normalize(url);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;        // Fallback to default
+<b class="nc">&nbsp;        return normalize(DEFAULT_ILP_ENDPOINT);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Bean
+&nbsp;    public RestTemplate restTemplate() {
+<b class="fc">&nbsp;        return new RestTemplate();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String normalize(String url) {
+<b class="pc">&nbsp;        if (url == null) return null;</b>
+<b class="pc">&nbsp;        if (url.endsWith(&quot;/&quot;)) return url.substring(0, url.length() - 1);</b>
+<b class="nc">&nbsp;        return url;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-26 21:17</div>
+</div>
+</body>
+</html>

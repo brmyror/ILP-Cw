@@ -1,0 +1,178 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > IsInRegionService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">uk.ac.ed.acp.cw2.service</a>
+</div>
+
+<h1>Coverage Summary for Class: IsInRegionService (uk.ac.ed.acp.cw2.service)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">IsInRegionService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85.7%
+  </span>
+  <span class="absValue">
+    (18/21)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package uk.ac.ed.acp.cw2.service;
+&nbsp;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import uk.ac.ed.acp.cw2.data.ErrorHandler;
+&nbsp;import uk.ac.ed.acp.cw2.dto.IsInRegionRequest;
+&nbsp;import uk.ac.ed.acp.cw2.dto.LngLat;
+&nbsp;import uk.ac.ed.acp.cw2.dto.Region;
+&nbsp;
+&nbsp;import java.awt.*;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;public class IsInRegionService {</b>
+&nbsp;    public static Boolean isInRegion(IsInRegionRequest req, HttpServletResponse response, Logger logger) {
+&nbsp;        try {
+<b class="fc">&nbsp;            Boolean errorHandlerIsInRegionRequest = ErrorHandler.isInRegionRequest(req, logger);</b>
+&nbsp;            // Validate input, reject if: req, pos, region, lng, lat is NaN or out of bounds
+<b class="fc">&nbsp;            if (errorHandlerIsInRegionRequest) {</b>
+<b class="fc">&nbsp;                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);</b>
+<b class="fc">&nbsp;                response.sendError(400);</b>
+<b class="fc">&nbsp;                logger.error(&quot;Invalid position or region parameters passed in \n&quot;);</b>
+<b class="fc">&nbsp;                return null;</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            LngLat pos = req.getLngLat();</b>
+<b class="fc">&nbsp;            Region region = req.getRegion();</b>
+&nbsp;
+&nbsp;            // Create a Polygon object from the region&#39;s vertices
+<b class="fc">&nbsp;            Polygon polygon = new Polygon();</b>
+<b class="fc">&nbsp;            for (LngLat vertex : region.getVertices()) {</b>
+&nbsp;                /*
+&nbsp;                  Creates a polygon with the given vertices, scaled to avoid floating point precision issues, cast type
+&nbsp;                  int as polygon class requires int parameters, but all coordinates in this project seem to be given
+&nbsp;                  and on piazza its said, 6 degrees of precision is enough, and when type cast to int after multiplying by
+&nbsp;                  1,000,000, we still have 6 digits after decimal point preserved.
+&nbsp;                  https://docs.oracle.com/javase/8/docs/api/java/awt/Polygon.html
+&nbsp;                 */
+<b class="fc">&nbsp;                polygon.addPoint((int) (vertex.getLng() * 1_000_000), (int) (vertex.getLat() * 1_000_000));</b>
+&nbsp;
+<b class="pc">&nbsp;                if (vertex.getLat().equals(pos.getLat()) &amp;&amp; vertex.getLng().equals(pos.getLng())) {</b>
+&nbsp;                    // If the position is exactly one of the vertices, it is considered inside, as its on an edge
+&nbsp;                    // result of an edge case found while testing
+<b class="fc">&nbsp;                    response.setStatus(HttpServletResponse.SC_OK);</b>
+<b class="fc">&nbsp;                    return true;</b>
+&nbsp;                }
+&nbsp;
+&nbsp;            }
+&nbsp;
+&nbsp;            // Check if the position is inside the polygon
+<b class="fc">&nbsp;            boolean isInside = polygon.contains((int) (pos.getLng() * 1_000_000), (int) (pos.getLat() * 1_000_000));</b>
+&nbsp;
+<b class="fc">&nbsp;            response.setStatus(HttpServletResponse.SC_OK);</b>
+<b class="fc">&nbsp;            return isInside;</b>
+&nbsp;        } catch (Exception e) {
+<b class="nc">&nbsp;            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);</b>
+<b class="nc">&nbsp;            logger.error(&quot;Exception caught \n&quot;, e);</b>
+<b class="nc">&nbsp;            return null;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-26 21:17</div>
+</div>
+</body>
+</html>

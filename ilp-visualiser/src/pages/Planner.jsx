@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DispatchForm from "../components/DispatchForm.jsx";
-import DispatchList from "../components/DispatchList.jsx";
+import DispatchTable from "../components/DispatchTable.jsx";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import dispatchScenarioData from "../data/dispatch-scenario.json";
@@ -63,7 +63,7 @@ export default function Planner() {
             {/* Bottom row: left = dispatch table, right = use case instances */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", marginTop: "-50px" }}>
                 <div style={{ flex: 2 }}>
-                    <DispatchList
+                    <DispatchTable
                         dispatches={dispatches}
                         onDelete={(id) => setDispatches(prev => prev.filter(d => d.id !== id))}
                     />

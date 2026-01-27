@@ -1,0 +1,354 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ServiceController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">uk.ac.ed.acp.cw2.controller</a>
+</div>
+
+<h1>Coverage Summary for Class: ServiceController (uk.ac.ed.acp.cw2.controller)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ServiceController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (9/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64.7%
+  </span>
+  <span class="absValue">
+    (22/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package uk.ac.ed.acp.cw2.controller;
+&nbsp;
+&nbsp;import jakarta.servlet.http.HttpServletResponse;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;import org.springframework.beans.factory.annotation.Autowired;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import org.springframework.web.server.ResponseStatusException;
+&nbsp;import uk.ac.ed.acp.cw2.dto.*;
+&nbsp;import uk.ac.ed.acp.cw2.entity.Drone;
+&nbsp;import uk.ac.ed.acp.cw2.entity.DroneForServicePoint;
+&nbsp;import uk.ac.ed.acp.cw2.entity.DroneServicePoint;
+&nbsp;import uk.ac.ed.acp.cw2.entity.RestrictedArea;
+&nbsp;import uk.ac.ed.acp.cw2.service.*;
+&nbsp;import com.fasterxml.jackson.databind.node.ObjectNode;
+&nbsp;
+&nbsp;import java.net.URL;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@CrossOrigin(origins = &quot;*&quot;)
+&nbsp;@RestController()
+&nbsp;@RequestMapping(&quot;/api/v1&quot;)
+&nbsp;public class ServiceController {
+&nbsp;
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);</b>
+&nbsp;
+&nbsp;    @Value(&quot;${ilp.service.url}&quot;)
+&nbsp;    public URL serviceUrl;
+&nbsp;
+&nbsp;    private final ILPRestController ilpRestController;
+&nbsp;    private final DroneService droneService;
+&nbsp;
+&nbsp;    @Autowired
+&nbsp;    public ServiceController(ILPRestController ilpRestController,
+<b class="fc">&nbsp;                             DroneService droneService) {</b>
+<b class="fc">&nbsp;        this.ilpRestController = ilpRestController;</b>
+<b class="fc">&nbsp;        this.droneService = droneService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @GetMapping(&quot;/&quot;)
+&nbsp;    public String index() {
+<b class="nc">&nbsp;        return &quot;&lt;html&gt;&lt;body&gt;&quot; +</b>
+&nbsp;                &quot;&lt;h1&gt;Welcome from ILP&lt;/h1&gt;&quot; +
+&nbsp;                &quot;&lt;h4&gt;ILP-REST-Service-URL:&lt;/h4&gt; &lt;a href=\&quot;&quot; + serviceUrl + &quot;\&quot; target=\&quot;_blank\&quot;&gt; &quot; + serviceUrl+ &quot; &lt;/a&gt;&quot; +
+&nbsp;                &quot;&lt;/body&gt;&lt;/html&gt;&quot;;
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to retrieve a static UID.
+&nbsp;     *
+&nbsp;     * @return A hardcoded UID string.
+&nbsp;     */
+&nbsp;
+&nbsp;    @GetMapping(&quot;/uid&quot;)
+&nbsp;    public String uid() {
+<b class="fc">&nbsp;        return &quot;s2334630&quot;;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to calculate the Euclidean distance between two geographical positions.
+&nbsp;     * Expects a JSON payload with two positions, each containing latitude and longitude.
+&nbsp;     *{
+&nbsp;     *   &quot;position1&quot;: {
+&nbsp;     *    &quot;lng&quot;: -3.192473,
+&nbsp;     *    &quot;lat&quot;: 55.946233
+&nbsp;     *  },
+&nbsp;     *   &quot;position2&quot;: {
+&nbsp;     *    &quot;lng&quot;: -3.192473,
+&nbsp;     *    &quot;lat&quot;: 55.946300
+&nbsp;     *  }
+&nbsp;     * }
+&nbsp;     * @param req A LngLatPairRequest object containing two Position objects.
+&nbsp;     * @param response HttpServletResponse to set the status code.
+&nbsp;     * @return The Euclidean distance as a Double, or a 400 Bad Request status if the input is invalid.
+&nbsp;     */
+&nbsp;
+&nbsp;    @PostMapping(&quot;/distanceTo&quot;)
+&nbsp;    public Double distanceTo(@RequestBody PositionPair req, HttpServletResponse response) {
+<b class="fc">&nbsp;        return DistanceToService.distanceTo(req, response, logger);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to determine if two geographical positions are &quot;close&quot; to each other.
+&nbsp;     * Uses the distanceTo method to calculate the distance and checks if it is below 0.00015.
+&nbsp;     * Accepts JSON like:
+&nbsp;     * {
+&nbsp;     *   &quot;position1&quot;: {
+&nbsp;     *     &quot;lng&quot;: -3.192473,
+&nbsp;     *     &quot;lat&quot;: 55.946233
+&nbsp;     *   },
+&nbsp;     *   &quot;position2&quot;: {
+&nbsp;     *     &quot;lng&quot;: -3.192473,
+&nbsp;     *     &quot;lat&quot;: 55.946300
+&nbsp;     *   }
+&nbsp;     * }
+&nbsp;     * @param req A LngLatPairRequest object containing two Position objects.
+&nbsp;     * @param response HttpServletResponse to set the status code.
+&nbsp;     * @return A Boolean indicating if the positions are close, or a 400 Bad Request status if the input is invalid.
+&nbsp;     */
+&nbsp;
+&nbsp;    @PostMapping(&quot;/isCloseTo&quot;)
+&nbsp;    public Boolean isCloseTo(@RequestBody PositionPair req, HttpServletResponse response) {
+<b class="fc">&nbsp;        return IsCloseToService.isCloseTo(req, response, logger);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to calculate the next geographical position given a starting position and an angle.
+&nbsp;     * The angle must be one of the 16 cardinal points (0, 22.5, 45, ..., 360 degrees).
+&nbsp;     * The movement distance is fixed at 0.00015 degrees.
+&nbsp;     * Accepts JSON like:
+&nbsp;     * {
+&nbsp;     *   &quot;start&quot;: {
+&nbsp;     *     &quot;lng&quot;: -3.192473,
+&nbsp;     *     &quot;lat&quot;: 55.946233
+&nbsp;     *   },
+&nbsp;     *   &quot;angle&quot;: 90
+&nbsp;     * }
+&nbsp;     * @param req A NextPositionRequest object containing a starting Position and an angle in degrees.
+&nbsp;     * @param response HttpServletResponse to set the status code.
+&nbsp;     * @return A Position object representing the new position, or a 400 Bad Request status if the input is invalid.
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;/nextPosition&quot;)
+&nbsp;    public LngLat nextPosition(@RequestBody NextPositionRequest req, HttpServletResponse response) {
+<b class="fc">&nbsp;        return NextPositionService.nextPosition(req, response, logger);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to determine if a given geographical position is inside a specified region.
+&nbsp;     * The region is defined by a closed polygon with at least 4 vertices (the first and last vertex must be the same).
+&nbsp;     * Accepts JSON like:
+&nbsp;     * {
+&nbsp;     *   &quot;position&quot;: {
+&nbsp;     *     &quot;lng&quot;: -3.192473,
+&nbsp;     *     &quot;lat&quot;: 55.946233
+&nbsp;     *   },
+&nbsp;     *   &quot;region&quot;: {
+&nbsp;     *     &quot;name&quot;: &quot;Test Region&quot;,
+&nbsp;     *     &quot;vertices&quot;: [
+&nbsp;     *       {&quot;lng&quot;: -3.192000, &quot;lat&quot;: 55.946000},
+&nbsp;     *       {&quot;lng&quot;: -3.193000, &quot;lat&quot;: 55.946000},
+&nbsp;     *       {&quot;lng&quot;: -3.193000, &quot;lat&quot;: 55.947000},
+&nbsp;     *       {&quot;lng&quot;: -3.192000, &quot;lat&quot;: 55.947000},
+&nbsp;     *       {&quot;lng&quot;: -3.192000, &quot;lat&quot;: 55.946000}
+&nbsp;     *     ]
+&nbsp;     *   }
+&nbsp;     * }
+&nbsp;     * @param req An IsInRegionRequest object containing a Position and a Region.
+&nbsp;     * @param response HttpServletResponse to set the status code.
+&nbsp;     * @return A Boolean indicating if the position is inside the region, or a 400 Bad Request status if the input is invalid.
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;/isInRegion&quot;)
+&nbsp;    public Boolean isInRegion(@RequestBody IsInRegionRequest req, HttpServletResponse response) {
+<b class="fc">&nbsp;        return IsInRegionService.isInRegion(req, response, logger);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to retrieve a list of drone IDs that have cooling capabilities based on their state.
+&nbsp;     * @param state The state of the drone&#39;s cooling capability to retrieve.
+&nbsp;     * @return A list of drone IDs, or an empty list if none are found.
+&nbsp;     */
+&nbsp;    @GetMapping(&quot;/dronesWithCooling/{state}&quot;)
+&nbsp;    public String[] dronesWithCooling(@PathVariable Boolean state) {
+<b class="nc">&nbsp;        List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="nc">&nbsp;        return droneService.dronesWithCooling(state, drones);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to return the Drone entity for the given id or throws 404 if not found.
+&nbsp;     *
+&nbsp;     * @param id drone id
+&nbsp;     * @return Drone entity
+&nbsp;     * @throws ResponseStatusException with 404 status when the id does not exist
+&nbsp;     */
+&nbsp;    @GetMapping(&quot;/droneDetails/{id}&quot;)
+&nbsp;    public Drone droneDetails(@PathVariable String id) {
+<b class="nc">&nbsp;        List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="nc">&nbsp;        return droneService.droneDetails(id, drones);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to return an array of drone IDs that are able to fulfill the given attribute name and value.
+&nbsp;     * @param name Attribute name to query on
+&nbsp;     * @param value Attribute value to query on
+&nbsp;     * @return Array of drone IDs, or an empty list if none are found.
+&nbsp;     */
+&nbsp;    @GetMapping(&quot;/queryAsPath/{attribute-name}/{attribute-value}&quot;)
+&nbsp;    public String[] queryAsPath(@PathVariable(&quot;attribute-name&quot;) String name, @PathVariable(&quot;attribute-value&quot;) String value ) {
+<b class="nc">&nbsp;        List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="nc">&nbsp;        return droneService.queryAsPath(name, value, drones);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to return an array of drone IDs that are able to fulfill the given QueryRequest array.
+&nbsp;     * @param req Array of QueryRequest objects
+&nbsp;     * @return Array of drone IDs, or an empty list if none are found.
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;/query&quot;)
+&nbsp;    public String[] query(@RequestBody List&lt;QueryRequest&gt; req ) {
+<b class="nc">&nbsp;        List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="nc">&nbsp;        return droneService.query(req, drones);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to return an array of drone IDs that are able to fulfill the given array of MedDispatchRec.
+&nbsp;     * @param req array of MedDispatchRecs
+&nbsp;     * @return array of drone IDs, or an empty list if none are found.
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;/queryAvailableDrones&quot;)
+&nbsp;    public String[] queryAvailableDrones(@RequestBody List&lt;MedDispatchRecRequest&gt; req) {
+<b class="nc">&nbsp;        List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="nc">&nbsp;        List&lt;DroneForServicePoint&gt; dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();</b>
+<b class="nc">&nbsp;        return droneService.queryAvailableDrones(req, drones, dronesForServicePoints);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to calculate the delivery paths for the given array of MedDispatchRec.
+&nbsp;     * @param req array of MedDispatchRecs, each containing a list of requirements.
+&nbsp;     * @return CalculatedDeliveryPathRequest object containing the delivery paths and total cost.
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;calcDeliveryPath&quot;)
+&nbsp;    public CalculatedDeliveryPathRequest calcDeliveryPath(@RequestBody List&lt;MedDispatchRecRequest&gt; req) {
+<b class="fc">&nbsp;        List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="fc">&nbsp;        List&lt;DroneServicePoint&gt; servicePoints = ilpRestController.fetchServicePointsFromIlp();</b>
+<b class="fc">&nbsp;        List&lt;DroneForServicePoint&gt; dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();</b>
+<b class="fc">&nbsp;        List&lt;RestrictedArea&gt; restrictedAreas = ilpRestController.fetchRestrictedAreasFromIlp();</b>
+<b class="fc">&nbsp;        String[] droneIDs = droneService.queryAvailableDrones(req, drones, dronesForServicePoints);</b>
+<b class="fc">&nbsp;        return droneService.calcDeliveryPath(req, drones, servicePoints, restrictedAreas, droneIDs, dronesForServicePoints);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Endpoint to calculate the delivery paths for the given array of MedDispatchRec and return the results as a GeoJSON FeatureCollection.
+&nbsp;     * @param req array of MedDispatchRecs, each containing a list of requirements.
+&nbsp;     * @return GeoJSON FeatureCollection object containing the delivery paths and total cost.
+&nbsp;     */
+&nbsp;    @PostMapping(&quot;calcDeliveryPathAsGeoJson&quot;)
+&nbsp;    public ObjectNode calcDeliveryPathAsGeoJson(@RequestBody List&lt;MedDispatchRecRequest&gt; req) {
+<b class="fc">&nbsp;         List&lt;Drone&gt; drones = ilpRestController.fetchDronesFromIlp();</b>
+<b class="fc">&nbsp;         List&lt;DroneServicePoint&gt; servicePoints = ilpRestController.fetchServicePointsFromIlp();</b>
+<b class="fc">&nbsp;         List&lt;DroneForServicePoint&gt; dronesForServicePoints = ilpRestController.fetchDronesForServicePointsFromIlp();</b>
+<b class="fc">&nbsp;         List&lt;RestrictedArea&gt; restrictedAreas = ilpRestController.fetchRestrictedAreasFromIlp();</b>
+<b class="fc">&nbsp;         String[] droneIDs = droneService.queryAvailableDrones(req, drones, dronesForServicePoints);</b>
+&nbsp;
+&nbsp;         // compute the detailed delivery path structure first
+<b class="fc">&nbsp;         CalculatedDeliveryPathRequest calc = droneService.calcDeliveryPath(req, drones, servicePoints, restrictedAreas, droneIDs, dronesForServicePoints);</b>
+&nbsp;         // build and return a GeoJSON FeatureCollection object (Jackson ObjectNode)
+<b class="fc">&nbsp;         return droneService.buildGeoJsonObject(calc);</b>
+&nbsp;     }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-26 21:17</div>
+</div>
+</body>
+</html>
