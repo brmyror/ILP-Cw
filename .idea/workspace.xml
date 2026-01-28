@@ -4,122 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cae81318-9fe6-429f-aa0c-94f3d2ba7cae" name="Changes" comment="lots of ST tests/functionality and reports">
+    <list default="true" id="cae81318-9fe6-429f-aa0c-94f3d2ba7cae" name="Changes" comment="same as before - lots of ST tests/functionality and reports">
       <change afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/IlpTutorial1-0.0.1-SNAPSHOT.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/IlpTutorial1-0.0.1-SNAPSHOT.jar.original" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/Application.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/configuration/IlpRestServiceConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/controller/ILPRestController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/controller/ServiceController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/data/Distance.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/data/DynamicQueries.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/data/ErrorHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/data/FlightPathAlgorithm$Node.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/data/FlightPathAlgorithm.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/data/RuntimeEnvironment.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/CalculatedDeliveryPathRequest$CalculatedDeliveryPathRequestBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/CalculatedDeliveryPathRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneDto$Capabilities.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneDto.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneForServicePointDto$DroneAvailability$Availability.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneForServicePointDto$DroneAvailability.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneForServicePointDto.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneServicePointDto$Location.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/DroneServicePointDto.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/IsInRegionRequest$IsInRegionRequestBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/IsInRegionRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/LngLat$LngLatBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/LngLat.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/MedDispatchRecRequest$Requirements.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/MedDispatchRecRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/NextPositionRequest$NextPositionRequestBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/NextPositionRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/PositionPair$PositionPairBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/PositionPair.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/QueryRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/Region$RegionBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/Region.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/RestrictedAreaDto$Limits.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/RestrictedAreaDto$Vertices.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/dto/RestrictedAreaDto.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/Deliveries$DeliveriesBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/Deliveries.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/Drone$DroneBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/Drone.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneForServicePoint$Availability$AvailabilityBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneForServicePoint$Availability.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneForServicePoint$DroneAvailability$DroneAvailabilityBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneForServicePoint$DroneAvailability.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneForServicePoint$DroneForServicePointBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneForServicePoint.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DronePaths$DronePathsBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DronePaths.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneServicePoint$DroneServicePointBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneServicePoint.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/DroneServicePointAvailability.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/RestrictedArea$RestrictedAreaBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/RestrictedArea$limits$limitsBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/RestrictedArea$limits.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/RestrictedArea$vertices$verticesBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/RestrictedArea$vertices.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/entity/RestrictedArea.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/mapper/DroneForServicePointMapper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/mapper/DroneMapper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/mapper/DroneServicePointMapper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/mapper/RestrictedAreaMapper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/service/DistanceToService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/service/DroneService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/service/IsCloseToService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/service/IsInRegionService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/uk/ac/ed/acp/cw2/service/NextPositionService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.controller.ServiceControllerWebTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.DistanceTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.ErrorHandlerAngleTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.ErrorHandlerIsInRegionRequestTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.ErrorHandlerLngLatTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.ErrorHandlerNextPositionRequestTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.ErrorHandlerPositionPairTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.data.ErrorHandlerRegionTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.service.DistanceToServiceTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.service.IsCloseToServiceTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.service.IsInRegionRequestServiceTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-uk.ac.ed.acp.cw2.service.NextPositionRequestServiceTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.controller.ServiceControllerWebTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.DistanceTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.ErrorHandlerAngleTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.ErrorHandlerIsInRegionRequestTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.ErrorHandlerLngLatTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.ErrorHandlerNextPositionRequestTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.ErrorHandlerPositionPairTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.data.ErrorHandlerRegionTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.service.DistanceToServiceTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.service.IsCloseToServiceTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.service.IsInRegionRequestServiceTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/uk.ac.ed.acp.cw2.service.NextPositionRequestServiceTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/controller/ServiceControllerWebTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/DistanceTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/ErrorHandlerAngleTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/ErrorHandlerIsInRegionRequestTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/ErrorHandlerLngLatTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/ErrorHandlerNextPositionRequestTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/ErrorHandlerPositionPairTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/data/ErrorHandlerRegionTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/service/BaseServiceTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/service/DistanceToServiceTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/service/IsCloseToServiceTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/service/IsInRegionRequestServiceTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/uk/ac/ed/acp/cw2/service/NextPositionRequestServiceTest.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,7 +65,7 @@
   &quot;isMigrated&quot;: true
 }</component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="QODANA_PROBLEMS_VIEW_TAB" />
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
@@ -185,59 +75,61 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.Docker Image (1).executor&quot;: &quot;Run&quot;,
-    &quot;Docker.Docker Image.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.cw2image.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.ILPRestControllerTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.IlpRestServiceConfigTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.java in IlpTutorial1.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.IlpTutorial1 [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.IlpTutorial1 [package].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.IlpTutorial1 [test].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.IlpTutorial1 [validate].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.IlpTutorial1 [verify].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Spring Boot.Application.executor&quot;: &quot;Coverage&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;extract.method.default.visibility&quot;: &quot;public&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/roryb/IdeaProjects/ILP-Cw3&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.5448276&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.Docker Image (1).executor": "Run",
+    "Docker.Docker Image.executor": "Run",
+    "Docker.Dockerfile.executor": "Run",
+    "Docker.cw2image.executor": "Run",
+    "JUnit.ILPRestControllerTest.executor": "Run",
+    "JUnit.IlpRestServiceConfigTest.executor": "Run",
+    "JUnit.java in IlpTutorial1.executor": "Profiler#1",
+    "Maven.IlpTutorial1 [clean].executor": "Run",
+    "Maven.IlpTutorial1 [package].executor": "Run",
+    "Maven.IlpTutorial1 [test].executor": "Run",
+    "Maven.IlpTutorial1 [validate].executor": "Run",
+    "Maven.IlpTutorial1 [verify].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.Application.executor": "Coverage",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "extract.method.default.visibility": "public",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/roryb/IdeaProjects/ILP-Cw3",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.5448276",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;postgresql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\roryb\IdeaProjects\ILP-Cw3\docs\for other courseworks" />
+      <recent name="C:\Users\roryb\IdeaProjects\ILP-Cw3\docs" />
       <recent name="C:\Users\roryb\IdeaProjects\ILP-Cw3\ILP-Cw2" />
     </key>
   </component>
@@ -359,7 +251,7 @@
       <workItem from="1768495804854" duration="219000" />
       <workItem from="1768496299406" duration="59000" />
       <workItem from="1769268931328" duration="1358000" />
-      <workItem from="1769274328871" duration="24704000" />
+      <workItem from="1769274328871" duration="36604000" />
     </task>
     <task id="LOCAL-00001" summary="basic start to cw2 with task 2 dtos">
       <option name="closed" value="true" />
@@ -553,7 +445,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769525064079</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="same as before - lots of ST tests/functionality and reports">
+      <option name="closed" value="true" />
+      <created>1769525595764</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1769525595764</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -603,7 +503,8 @@
     <MESSAGE value="cw3 complete repo, also cw2 fixes (too late for full marks sadly)" />
     <MESSAGE value="pls work" />
     <MESSAGE value="lots of ST tests/functionality and reports" />
-    <option name="LAST_COMMIT_MESSAGE" value="lots of ST tests/functionality and reports" />
+    <MESSAGE value="same as before - lots of ST tests/functionality and reports" />
+    <option name="LAST_COMMIT_MESSAGE" value="same as before - lots of ST tests/functionality and reports" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ILP_Cw3$java_in_IlpTutorial1.ic" NAME="java in IlpTutorial1 Coverage Results" MODIFIED="1769462218811" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true" />
